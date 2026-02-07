@@ -6,9 +6,9 @@ rust-version.workspace = true
 publish = false
 
 [dependencies]
-anyhow = "1.0.97"
-clap = { version = "4.5.32", features = ["derive", "env"] }
-clap_complete = { version = "4.5.50", optional = true }
+anyhow = "1.0.101"
+clap = { version = "4.5.57", features = ["derive", "env"] }
+clap_complete = { version = "4.5.65", optional = true }
 tabled = "0.20.0"
 tokio = { workspace = true, features = ["macros", "sync"] }
 wastebin_core = { path = "../wastebin_core" }
