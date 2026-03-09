@@ -2,7 +2,7 @@ use std::sync::LazyLock;
 
 use chacha20poly1305::aead::{Aead, KeyInit};
 use chacha20poly1305::{Key, XChaCha20Poly1305, XNonce};
-use rand::Rng;
+use rand::RngExt;
 use tokio::task::spawn_blocking;
 
 use crate::env;
