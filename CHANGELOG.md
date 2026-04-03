@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+
+## 3.4.1
+
+**2026-04-03**
+
 ### Changed
 
 - Use `POST` request for deletion.
