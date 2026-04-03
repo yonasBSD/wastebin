@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+- Use `POST` request for deletion.
+
 
 ## 3.4.0
 

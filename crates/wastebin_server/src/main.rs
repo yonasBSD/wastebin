@@ -202,7 +202,7 @@ fn make_app(state: AppState, timeout: Duration, max_body_size: usize) -> Router 
         )
         .route("/dl/{id}", get(download::get))
         .route("/raw/{id}", get(raw::get))
-        .route("/delete/{id}", get(delete::form::delete))
+        .route("/delete/{id}", post(delete::form::delete))
         .layer(
             ServiceBuilder::new()
                 .layer(DefaultBodyLimit::max(max_body_size))

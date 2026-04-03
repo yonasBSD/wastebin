@@ -37,7 +37,7 @@ mod tests {
         let location = res.headers().get("location").unwrap().to_str()?;
         let id = location.replace('/', "");
 
-        let res = client.get(&format!("/delete/{id}")).send().await?;
+        let res = client.post(&format!("/delete/{id}")).send().await?;
         assert_eq!(res.status(), StatusCode::SEE_OTHER);
 
         let res = client.get(&format!("/{id}")).send().await?;
