@@ -7,6 +7,7 @@
 - Use `POST` request for deletion.
 - Use safe referer extractor to avoid open redirect via `pref` query parameter.
 - Set cookie attributes also on theme preference cookie.
+- Encode content disposition filename with RFC 5987 to avoid encoding problems.
 
 
 ## 3.4.0

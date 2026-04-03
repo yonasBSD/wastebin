@@ -1,3 +1,5 @@
+use std::fmt::Write;
+
 use axum::extract::{Path, State};
 use axum::http::header;
 use axum::response::{IntoResponse, Response};
@@ -39,13 +41,25 @@ pub async fn get(
     .map_err(|err| make_error(err, page, theme))
 }
 
+fn make_content_disposition(filename: &str) -> HeaderValue {
+    let mut value = String::from("attachment; filename*=UTF-8''");
+
+    for b in filename.bytes() {
+        if b.is_ascii_alphanumeric() || matches!(b, b'.' | b'-' | b'_' | b'~' | b'+') {
+            value.push(b as char);
+        } else {
+            write!(value, "%{b:02X}").expect("writing to String");
+        }
+    }
+
+    HeaderValue::try_from(value).unwrap_or_else(|_| HeaderValue::from_static("attachment"))
+}
+
 fn get_download(key: &Key, data: Data) -> impl IntoResponse {
     let filename = data.metadata.title.unwrap_or_else(|| key.to_string());
 
     let content_type = "text; charset=utf-8";
-    let content_disposition =
-        HeaderValue::try_from(format!(r#"attachment; filename="{filename}""#))
-            .expect("constructing valid header value");
+    let content_disposition = make_content_disposition(&filename);
 
     (
         [
@@ -82,7 +96,7 @@ mod tests {
         let content_disposition = res.headers().get(header::CONTENT_DISPOSITION).unwrap();
         assert_eq!(
             content_disposition.to_str()?,
-            format!(r#"attachment; filename="{filename}.cpp""#),
+            format!("attachment; filename*=UTF-8''{filename}.cpp"),
         );
 
         let content = res.text().await?;
@@ -92,7 +106,53 @@ mod tests {
         let content_disposition = res.headers().get(header::CONTENT_DISPOSITION).unwrap();
         assert_eq!(
             content_disposition.to_str()?,
-            format!(r#"attachment; filename="{filename}""#),
+            format!("attachment; filename*=UTF-8''{filename}"),
+        );
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn download_title_with_quotes() -> Result<(), Box<dyn std::error::Error>> {
+        let client = Client::new(StoreCookies(false)).await;
+        let data = Entry {
+            text: String::from("content"),
+            title: String::from(r#"file"name.txt"#),
+            ..Default::default()
+        };
+
+        let res = client.post_form().form(&data).send().await?;
+        let location = res.headers().get("location").unwrap().to_str()?;
+        let res = client.get(&format!("/dl{location}")).send().await?;
+        assert_eq!(res.status(), StatusCode::OK);
+
+        let content_disposition = res.headers().get(header::CONTENT_DISPOSITION).unwrap();
+        assert_eq!(
+            content_disposition.to_str()?,
+            "attachment; filename*=UTF-8''file%22name.txt",
+        );
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn download_title_with_non_ascii() -> Result<(), Box<dyn std::error::Error>> {
+        let client = Client::new(StoreCookies(false)).await;
+        let data = Entry {
+            text: String::from("content"),
+            title: String::from("café.txt"),
+            ..Default::default()
+        };
+
+        let res = client.post_form().form(&data).send().await?;
+        let location = res.headers().get("location").unwrap().to_str()?;
+        let res = client.get(&format!("/dl{location}")).send().await?;
+        assert_eq!(res.status(), StatusCode::OK);
+
+        let content_disposition = res.headers().get(header::CONTENT_DISPOSITION).unwrap();
+        assert_eq!(
+            content_disposition.to_str()?,
+            "attachment; filename*=UTF-8''caf%C3%A9.txt",
         );
 
         Ok(())
