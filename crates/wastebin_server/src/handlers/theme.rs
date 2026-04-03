@@ -1,24 +1,58 @@
 use axum::extract::Query;
-use axum::http::HeaderMap;
-use axum::response::{IntoResponse, Redirect};
-use http::header::{REFERER, SET_COOKIE};
+use axum::response::IntoResponse;
+use http::header::SET_COOKIE;
 
-use crate::handlers::extract::Preference;
+use crate::handlers::extract::{Preference, SafeReferer};
 
 /// GET handler to switch theme by setting the pref cookie and redirecting back to the referer.
-pub async fn get(headers: HeaderMap, Query(pref): Query<Preference>) -> impl IntoResponse {
-    let response = headers
-        .get(REFERER)
-        .and_then(|referer| referer.to_str().ok())
-        .map_or_else(|| Redirect::to("/"), Redirect::to);
-
-    ([(SET_COOKIE, format!("pref={}", pref.pref))], response)
+pub async fn get(
+    SafeReferer(redirect): SafeReferer,
+    Query(pref): Query<Preference>,
+) -> impl IntoResponse {
+    ([(SET_COOKIE, format!("pref={}", pref.pref))], redirect)
 }
 
 #[cfg(test)]
 mod tests {
     use crate::test_helpers::{Client, StoreCookies};
     use http::header::REFERER;
+
+    #[tokio::test]
+    async fn external_referer_redirects_to_path_only() -> Result<(), Box<dyn std::error::Error>> {
+        let client = Client::new(StoreCookies(true)).await;
+
+        let response = client
+            .get("/theme")
+            .header(REFERER, "https://evil.example.com/phish?bait=1")
+            .query(&[("pref", "dark")])
+            .send()
+            .await?;
+
+        assert!(response.status().is_redirection());
+        let location = response.headers().get("location").unwrap().to_str()?;
+        assert_eq!(location, "/phish?bait=1");
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn protocol_relative_referer_falls_back_to_root() -> Result<(), Box<dyn std::error::Error>>
+    {
+        let client = Client::new(StoreCookies(true)).await;
+
+        let response = client
+            .get("/theme")
+            .header(REFERER, "//evil.example.com/phish")
+            .query(&[("pref", "dark")])
+            .send()
+            .await?;
+
+        assert!(response.status().is_redirection());
+        let location = response.headers().get("location").unwrap().to_str()?;
+        assert_eq!(location, "/");
+
+        Ok(())
+    }
 
     #[tokio::test]
     async fn redirect_with_cookie() -> Result<(), Box<dyn std::error::Error>> {

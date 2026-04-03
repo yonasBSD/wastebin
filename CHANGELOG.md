@@ -5,6 +5,7 @@
 ### Changed
 
 - Use `POST` request for deletion.
+- Use safe referer extractor to avoid open redirect via `pref` query parameter.
 
 
 ## 3.4.0

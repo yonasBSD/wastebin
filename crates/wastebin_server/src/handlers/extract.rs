@@ -5,11 +5,18 @@ use axum::extract::{
     Request,
 };
 use axum::http::request::Parts;
+use axum::response::Redirect;
 use axum_extra::extract::cookie::Key;
 use axum_extra::extract::{CookieJar, SignedCookieJar};
 use serde::Deserialize;
 
 use wastebin_core::crypto;
+
+/// A safe redirect back to the referer.
+///
+/// Extracts the `Referer` header and strips it down to just the path (and query string),
+/// preventing open redirects via external referer values. Falls back to `"/"`.
+pub(crate) struct SafeReferer(pub Redirect);
 
 /// Theme extractor, extracted from the `pref` cookie.
 #[derive(Debug, Deserialize, Clone)]
@@ -120,6 +127,40 @@ where
                 .await
                 .ok(),
         )
+    }
+}
+
+impl<S> FromRequestParts<S> for SafeReferer
+where
+    S: Send + Sync,
+{
+    type Rejection = Infallible;
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        let redirect = parts
+            .headers
+            .get(http::header::REFERER)
+            .and_then(|referer| referer.to_str().ok())
+            .map(|referer| {
+                if referer.starts_with('/') && !referer.starts_with("//") {
+                    Redirect::to(referer)
+                } else {
+                    referer
+                        .parse::<url::Url>()
+                        .ok()
+                        .map(|url| {
+                            let path = url.path();
+                            url.query().map_or_else(
+                                || Redirect::to(path),
+                                |q| Redirect::to(&format!("{path}?{q}")),
+                            )
+                        })
+                        .unwrap_or_else(|| Redirect::to("/"))
+                }
+            })
+            .unwrap_or_else(|| Redirect::to("/"));
+
+        Ok(SafeReferer(redirect))
     }
 }
 
