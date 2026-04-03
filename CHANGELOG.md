@@ -6,6 +6,7 @@
 
 - Use `POST` request for deletion.
 - Use safe referer extractor to avoid open redirect via `pref` query parameter.
+- Set cookie attributes also on theme preference cookie.
 
 
 ## 3.4.0

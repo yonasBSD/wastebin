@@ -1,15 +1,18 @@
 use axum::extract::Query;
 use axum::response::IntoResponse;
-use http::header::SET_COOKIE;
+use axum_extra::extract::CookieJar;
 
+use crate::handlers::cookie;
 use crate::handlers::extract::{Preference, SafeReferer};
 
 /// GET handler to switch theme by setting the pref cookie and redirecting back to the referer.
 pub async fn get(
     SafeReferer(redirect): SafeReferer,
+    jar: CookieJar,
     Query(pref): Query<Preference>,
 ) -> impl IntoResponse {
-    ([(SET_COOKIE, format!("pref={}", pref.pref))], redirect)
+    let cookie = cookie("pref", pref.pref.to_string());
+    (jar.add(cookie), redirect)
 }
 
 #[cfg(test)]
@@ -76,6 +79,9 @@ mod tests {
             .unwrap();
 
         assert_eq!(cookie.value(), "dark");
+        assert_eq!(cookie.path().unwrap(), "/");
+        assert!(cookie.http_only());
+        assert!(cookie.same_site_strict());
 
         Ok(())
     }

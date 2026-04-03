@@ -2,10 +2,11 @@ use std::num::NonZeroU32;
 
 use axum::extract::{Form, State};
 use axum::response::{IntoResponse, Redirect};
-use axum_extra::extract::cookie::{Cookie, SameSite, SignedCookieJar};
+use axum_extra::extract::cookie::SignedCookieJar;
 use serde::{Deserialize, Serialize};
 
 use crate::Page;
+use crate::handlers::cookie;
 use crate::handlers::extract::{Theme, Uid};
 use crate::handlers::html::make_error;
 use wastebin_core::db::{Database, write};
@@ -79,11 +80,8 @@ pub async fn post<E: std::fmt::Debug>(
 
         db.insert(id, entry).await?;
 
-        let cookie = Cookie::build(("uid", uid.to_string()))
-            .http_only(true)
-            .secure(true)
-            .same_site(SameSite::Strict)
-            .build();
+        let mut cookie = cookie("uid", uid.to_string());
+        cookie.set_secure(true);
 
         Ok((jar.add(cookie), Redirect::to(&url)))
     }
@@ -162,7 +160,7 @@ mod tests {
         let cookie = res.cookies().find(|cookie| cookie.name() == "uid").unwrap();
         assert_eq!(cookie.name(), "uid");
         assert!(cookie.value().len() > 40);
-        assert!(cookie.path().is_none());
+        assert_eq!(cookie.path().unwrap(), "/");
         assert!(cookie.http_only());
         assert!(cookie.same_site_strict());
         assert!(cookie.domain().is_none());
