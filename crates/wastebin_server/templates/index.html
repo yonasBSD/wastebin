@@ -4,61 +4,171 @@
 <script defer src="{{ page.assets.index_js.route() }}"></script>
 {% endblock %}
 
-{% block nav_specific %}
-    <div class="nav-item">
-      <button id="open" class="nav-button" title="upload" aria-label="upload">
-        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v9m-5 0H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2M8 9l4-5 4 5m1 8h.01"/>
-        </svg>
-      </button>
-    </div>
+{% block nav_actions %}
+  <button type="button" id="open" class="nav-button" title="upload" aria-label="upload">
+    <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10V3"/><path d="M5 5.5L8 2.5 11 5.5"/><path d="M3 11v1.5a1 1 0 001 1h8a1 1 0 001-1V11"/></svg>
+  </button>
 {% endblock %}
 
-{%- block content -%}
-    <form id="form" action="/new" method="post">
-      <div class="container">
-        <div class="content">
-          <textarea id="text" name="text" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" placeholder="<paste text or drop file here>" autofocus required></textarea>
-        </div>
-        <div class="controls">
-          <div class="controls-group">
-            <div class="controls-row">
-              <select class="controls-row" name="extension" id="langs" size="17" aria-label="Language">
-              {%- for syntax in highlighter.syntaxes() -%}
-                {%- if let Some(extension) = syntax.extensions.first() %}
-                <option value="{{ extension }}">{{ syntax.name }}</option>
-                {%- endif -%}
-              {%- endfor %}
-              </select>
-              <input class="controls-row" type="search" id="filter" placeholder="Filter ...">
-            </div>
-          </div>
-          <div class="controls-group">
-            <select name="expires" size="{{ page.expirations.len() }}" id="expiration-list" aria-label="Expiry">
-              {% for expiration in page.expirations %}
-              <option value="{{ expiration.duration.as_secs() }}" {% if expiration.default %}selected{% endif %}> {{ expiration }}
-              </option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="controls-group">
-            <div class="controls-checkbox-group">
-              <input type="checkbox" name="burn-after-reading" id="burn-after-reading">
-              <label for="burn-after-reading">🔥 after reading</label>
-            </div>
-          </div>
-          <div class="controls-group">
-            <div class="controls-row">
-              <input type="password" name="password" id="password" placeholder="Password ...">
-            </div>
-            <div class="controls-row">
-              <input type="text" name="title" id="title" placeholder="Title ...">
-            </div>
-          </div>
-          <div class="controls-group">
-            <button type="submit" title="Paste" class="button">Paste</button>
-          </div>
+{% block body %}
+<form id="form" action="/new" method="post">
+  <div id="main-container">
+    <header>
+      <div class="nav-group">
+        <a href="/" class="nav-button" title="home" aria-label="home">
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8L8 2.5L13.5 8M4 6.8V13a.7.7 0 00.7.7h2.1V11a.7.7 0 01.7-.7h1a.7.7 0 01.7.7v2.7h2.1a.7.7 0 00.7-.7V6.8"/></svg>
+        </a>
+      </div>
+      <div class="nav-group">
+        <button type="button" id="open" class="nav-button" title="upload" aria-label="upload">
+          <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10V3"/><path d="M5 5.5L8 2.5 11 5.5"/><path d="M3 11v1.5a1 1 0 001 1h8a1 1 0 001-1V11"/></svg>
+        </button>
+        <div class="theme-switcher">
+          {% match theme %}
+            {% when None %}
+              <a href="/theme?pref=dark" class="theme-opt" title="dark mode">
+                <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M10 7.2A4 4 0 0 1 4.8 2a4.2 4.2 0 1 0 5.2 5.2z"/></svg>
+              </a>
+              <a href="/theme?pref=light" class="theme-opt" title="light mode">
+                <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.2"/><path d="M6 1v1.4M6 9.6V11M1 6h1.4M9.6 6H11M2.4 2.4l1 1M8.6 8.6l1 1M2.4 9.6l1-1M8.6 3.4l1-1"/></svg>
+              </a>
+              <a href="/theme?pref=system" class="theme-opt active" title="auto mode">
+                <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2" width="9" height="6.5" rx="1"/><path d="M4.5 10.5h3M6 8.5v2"/></svg>
+              </a>
+            {% when Some with (Theme::System) %}
+              <a href="/theme?pref=dark" class="theme-opt" title="dark mode">
+                <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M10 7.2A4 4 0 0 1 4.8 2a4.2 4.2 0 1 0 5.2 5.2z"/></svg>
+              </a>
+              <a href="/theme?pref=light" class="theme-opt" title="light mode">
+                <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.2"/><path d="M6 1v1.4M6 9.6V11M1 6h1.4M9.6 6H11M2.4 2.4l1 1M8.6 8.6l1 1M2.4 9.6l1-1M8.6 3.4l1-1"/></svg>
+              </a>
+              <a href="/theme?pref=system" class="theme-opt active" title="auto mode">
+                <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2" width="9" height="6.5" rx="1"/><path d="M4.5 10.5h3M6 8.5v2"/></svg>
+              </a>
+            {% when Some with (Theme::Dark) %}
+              <a href="/theme?pref=dark" class="theme-opt active" title="dark mode">
+                <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M10 7.2A4 4 0 0 1 4.8 2a4.2 4.2 0 1 0 5.2 5.2z"/></svg>
+              </a>
+              <a href="/theme?pref=light" class="theme-opt" title="light mode">
+                <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.2"/><path d="M6 1v1.4M6 9.6V11M1 6h1.4M9.6 6H11M2.4 2.4l1 1M8.6 8.6l1 1M2.4 9.6l1-1M8.6 3.4l1-1"/></svg>
+              </a>
+              <a href="/theme?pref=system" class="theme-opt" title="auto mode">
+                <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2" width="9" height="6.5" rx="1"/><path d="M4.5 10.5h3M6 8.5v2"/></svg>
+              </a>
+            {% when Some with (Theme::Light) %}
+              <a href="/theme?pref=dark" class="theme-opt" title="dark mode">
+                <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M10 7.2A4 4 0 0 1 4.8 2a4.2 4.2 0 1 0 5.2 5.2z"/></svg>
+              </a>
+              <a href="/theme?pref=light" class="theme-opt active" title="light mode">
+                <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.2"/><path d="M6 1v1.4M6 9.6V11M1 6h1.4M9.6 6H11M2.4 2.4l1 1M8.6 8.6l1 1M2.4 9.6l1-1M8.6 3.4l1-1"/></svg>
+              </a>
+              <a href="/theme?pref=system" class="theme-opt" title="auto mode">
+                <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2" width="9" height="6.5" rx="1"/><path d="M4.5 10.5h3M6 8.5v2"/></svg>
+              </a>
+          {% endmatch %}
         </div>
       </div>
-    </form>
-{%- endblock -%}
+    </header>
+    <div id="content-area">
+      <main class="editor-area">
+        <div class="editor" id="editor-wrap">
+          <div id="line-numbers" aria-hidden="true"></div>
+          <textarea id="text" name="text" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" placeholder="paste, type, or drop a file here …" autofocus required></textarea>
+          <div class="drop-overlay" id="drop-overlay">
+            <div>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13"/><path d="M7 8l5-5 5 5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+              <div class="drop-overlay-text">drop to load file</div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <aside class="panel">
+        <section class="panel-section">
+          <div class="panel-label">title</div>
+          <input type="text" name="title" id="title" class="input-base" placeholder="untitled">
+        </section>
+
+        <section class="panel-section">
+          <div class="panel-label">language</div>
+          <input type="search" id="filter" class="input-base lang-filter" placeholder="filter …" autocomplete="off">
+          <select name="extension" id="langs" class="lang-select" size="12" aria-label="Language">
+          {%- for syntax in highlighter.syntaxes() -%}
+            {%- if let Some(extension) = syntax.extensions.first() %}
+            <option value="{{ extension }}">{{ syntax.name }}</option>
+            {%- endif -%}
+          {%- endfor %}
+          </select>
+        </section>
+
+        <section class="panel-section">
+          <div class="panel-label">expires</div>
+          <div class="expiry-list" id="expiry-list">
+            {% for expiration in page.expirations %}
+            <label class="expiry-btn">
+              <input type="radio" name="expires" value="{{ expiration.duration.as_secs() }}" {% if expiration.default %}checked{% endif %}>
+              <span>{{ expiration }}<i class="expiry-dot">&#9679;</i></span>
+            </label>
+            {% endfor %}
+          </div>
+        </section>
+
+        <section class="panel-section">
+          <div class="panel-label">options</div>
+          <div class="toggle-row" id="burn-row">
+            <div>
+              <div class="toggle-label">burn after reading</div>
+              <div class="toggle-hint">delete on first view</div>
+            </div>
+            <label class="toggle-track">
+              <input type="checkbox" name="burn-after-reading" id="burn-after-reading" class="toggle-input">
+              <span class="toggle-switch"></span>
+            </label>
+          </div>
+          <div class="toggle-gap"></div>
+          <div class="toggle-row" id="encrypt-row">
+            <div>
+              <div class="toggle-label">encrypt</div>
+              <div class="toggle-hint">password-protect the paste</div>
+            </div>
+            <label class="toggle-track">
+              <input type="checkbox" id="encrypt-toggle" class="toggle-input">
+              <span class="toggle-switch"></span>
+            </label>
+          </div>
+          <div class="password-group" id="password-group">
+            <input type="password" name="password" id="password" class="input-base" placeholder="password">
+          </div>
+        </section>
+
+        <section class="panel-section panel-footer">
+          <div class="stats" id="stats" data-max-bytes="{{ page.max_body_size }}">
+            <div class="stats-grid">
+              <div>
+                <div class="stat-label">lines</div>
+                <div class="stat-value" id="stat-lines">0</div>
+              </div>
+              <div>
+                <div class="stat-label">chars</div>
+                <div class="stat-value" id="stat-chars">0</div>
+              </div>
+              <div>
+                <div class="stat-label">bytes</div>
+                <div class="stat-value" id="stat-bytes">0</div>
+              </div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+            <div class="progress-label">
+              <span id="progress-kb">0.0 kb</span>
+              <span id="progress-limit"></span>
+            </div>
+          </div>
+          <button type="submit" title="Paste" class="paste-btn">
+            <span>paste</span>
+          </button>
+        </section>
+      </aside>
+    </div>
+  </div>
+</form>
+{% endblock %}

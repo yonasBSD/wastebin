@@ -2,10 +2,10 @@
 
 {% block title %}
   {% if let Some(title) = title %}
-    <div class="nav-title">{{ title }}</div>
+    <span class="nav-title">{{ title }}</span>
   {% endif %}
   {% if let Some(expiration) = expiration %}
-    <div class="nav-title nav-title-expiration">expires in {{ expiration }}</div>
+    <span class="nav-title nav-title-dim">expires in {{ expiration }}</span>
   {% endif %}
 {% endblock %}
 
@@ -15,51 +15,26 @@
 <script defer src="{{ page.assets.paste_js.route() }}"></script>
 {% endblock %}
 
-{% block nav_common %}
+{% block nav_actions %}
   {% if is_available %}
-  {% if can_delete %}
-    <div class="nav-item">
-      <form method="POST" action="/delete/{{ key.id() }}" style="display:inline">
-        <button type="submit" class="nav-button" title="delete paste" aria-label="delete paste">
-          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
-          </svg>
-        </button>
-      </form>
-    </div>
-  {% endif %}
-    <div class="nav-item">
-        <a href="/dl/{{ key }}" class="nav-button" title="download file" aria-label="download file">
-        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 13V4M7 14H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2m-1-5-4 5-4-5m9 8h.01"/>
-        </svg>
-      </a>
-    </div>
-    <div class="nav-item">
-      <a href="/raw/{{ key }}" class="nav-button" title="display raw file" aria-label="display raw file">
-        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 3v4a1 1 0 0 1-1 1H5m5 4-2 2 2 2m4-4 2 2-2 2m5-12v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7.914a1 1 0 0 1 .293-.707l3.914-3.914A1 1 0 0 1 9.914 3H18a1 1 0 0 1 1 1Z"/>
-        </svg>
-      </a>
-    </div>
-    <div class="nav-item">
-      <button class="nav-button" title="copy to clipboard" aria-label="copy to clipboard" id="copy-button">
-        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linejoin="round" stroke-width="2" d="M9 8v3a1 1 0 0 1-1 1H5m11 4h2a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v1m4 3v10a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7.13a1 1 0 0 1 .24-.65L7.7 8.35A1 1 0 0 1 8.46 8H13a1 1 0 0 1 1 1Z"/>
-        </svg>
+    {% if can_delete %}
+    <form method="POST" action="/delete/{{ key.id() }}" class="contents">
+      <button type="submit" class="nav-button nav-button-danger" title="delete paste" aria-label="delete paste">
+        <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5h9M7 3h2a1 1 0 011 1v1H6V4a1 1 0 011-1z"/><path d="M5 5l.5 7.5a1 1 0 001 .9h3a1 1 0 001-.9L11 5"/></svg>
       </button>
-    </div>
-  {% endif %}
-{% endblock %}
-{% block nav_specific %}
-  {% if is_available %}
-    <div class="nav-item">
-      <a href="/qr/{{ key }}" class="nav-button" title="qr code" aria-label="qr code">
-        <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-          <path stroke="currentColor" stroke-linejoin="round" stroke-width="2" d="M4 4h6v6H4V4Zm10 10h6v6h-6v-6Zm0-10h6v6h-6V4Zm-4 10h.01v.01H10V14Zm0 4h.01v.01H10V18Zm-3 2h.01v.01H7V20Zm0-4h.01v.01H7V16Zm-3 2h.01v.01H4V18Zm0-4h.01v.01H4V14Z"/>
-          <path stroke="currentColor" stroke-linejoin="round" stroke-width="2" d="M7 7h.01v.01H7V7Zm10 10h.01v.01H17V17Z"/>
-        </svg>
-      </a>
-    </div>
+    </form>
+    {% endif %}
+    <a href="/dl/{{ key }}" class="nav-button" title="download file" aria-label="download file">
+      <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v7"/><path d="M5 7l3 3 3-3"/><path d="M3 12h10"/></svg>
+    </a>
+    <a href="/raw/{{ key }}" class="nav-button" title="display raw file" aria-label="display raw file">
+      <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3h5l3.5 3.5V13H4z"/><path d="M9 3v3.5h3.5"/><path d="M6 8.5h4M6 10.5h4"/></svg>
+    </a>
+    <button class="nav-button" title="copy to clipboard" aria-label="copy to clipboard" id="copy-button">
+      <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="7" height="8" rx="1"/><path d="M6 5V4a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1"/></svg>
+    </button>
+    <a href="/qr/{{ key }}" class="nav-button" title="qr code" aria-label="qr code">
+      <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="5" height="5"/><rect x="9" y="2" width="5" height="5"/><rect x="2" y="9" width="5" height="5"/><path d="M9.5 9.5h1v1h-1zM11.5 9.5h2M9.5 11.5v2M11.5 11.5h2v2"/></svg>
+    </a>
   {% endif %}
 {% endblock %}

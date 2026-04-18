@@ -19,12 +19,19 @@ pub(crate) struct Page {
     pub assets: Assets,
     pub base_url: Url,
     pub expirations: Vec<Expiration>,
+    pub max_body_size: usize,
 }
 
 impl Page {
     /// Create new page meta data from generated  `assets`, `title` and optional `base_url`.
     #[must_use]
-    pub fn new(title: String, base_url: Url, theme: Theme, expirations: ExpirationSet) -> Self {
+    pub fn new(
+        title: String,
+        base_url: Url,
+        theme: Theme,
+        expirations: ExpirationSet,
+        max_body_size: usize,
+    ) -> Self {
         let assets = Assets::new(theme);
         let expirations = expirations.into_inner();
 
@@ -34,6 +41,7 @@ impl Page {
             assets,
             base_url,
             expirations,
+            max_body_size,
         }
     }
 }

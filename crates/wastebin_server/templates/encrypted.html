@@ -2,14 +2,11 @@
 
 {% block content %}
   <div class="flex-center">
+    <div class="centered-label">encrypted paste</div>
     <form action="/{{ id }}" method="post">
       <div class="controls">
-        <div class="controls-row">
-          <input type="password" id="password" name="password" placeholder="Password ..." autofocus>
-        </div>
-        <div id="controls-row">
-          <button class="button">Decrypt</button>
-        </div>
+        <input type="password" id="password" name="password" placeholder="password …" autofocus>
+        <button class="button">decrypt</button>
       </div>
     </form>
   </div>

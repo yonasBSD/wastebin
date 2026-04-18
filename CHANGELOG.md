@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Changed
+
+- Revamped the user interface for a little less minimalist but slightly sleeker
+  and cleaner look.
+
 
 ## 3.4.1
 

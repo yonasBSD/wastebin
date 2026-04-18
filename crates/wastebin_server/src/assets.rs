@@ -85,6 +85,8 @@ pub(crate) struct Css {
     pub light: Asset,
     /// Dark theme colors.
     pub dark: Asset,
+    /// Overrides applied when JavaScript is disabled.
+    pub no_js: Asset,
 }
 
 impl Css {
@@ -93,8 +95,14 @@ impl Css {
         let style = Asset::new_hashed("style", Kind::Css, include_str!("style.css").into());
         let light = Asset::new_hashed("light", Kind::Css, theme.light_css());
         let dark = Asset::new_hashed("dark", Kind::Css, theme.dark_css());
+        let no_js = Asset::new_hashed("no-js", Kind::Css, include_str!("no-js.css").into());
 
-        Self { style, light, dark }
+        Self {
+            style,
+            light,
+            dark,
+            no_js,
+        }
     }
 }
 

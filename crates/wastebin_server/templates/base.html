@@ -19,63 +19,75 @@
     {% endmatch %}
     <link rel="stylesheet" href="{{ page.assets.css.style.route() }}">
     <link rel="icon" href="{{ page.assets.favicon.route() }}" type="image/png">
+    <noscript><link rel="stylesheet" href="{{ page.assets.css.no_js.route() }}"></noscript>
     {% block head %}{% endblock %}
   </head>
   <body>
+    {% block body %}
     <div id="main-container">
       <header>
         <div class="nav-group">
-          <div class="nav-item">
-            <a href="/" class="nav-button" title="home" aria-label="home">
-              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m4 12 8-8 8 8M6 10.5V19a1 1 0 0 0 1 1h3v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3h3a1 1 0 0 0 1-1v-8.5"/>
-              </svg>
-            </a>
-          </div>
+          <a href="/" class="nav-button" title="home" aria-label="home">
+            <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 8L8 2.5L13.5 8M4 6.8V13a.7.7 0 00.7.7h2.1V11a.7.7 0 01.7-.7h1a.7.7 0 01.7.7v2.7h2.1a.7.7 0 00.7-.7V6.8"/></svg>
+          </a>
           {% block title %}{% endblock %}
         </div>
-        <div class="nav-group" id="nav-group-actions">
-          {% block nav_common %}{% endblock %}
-          {% block nav_specific %}{% endblock %}
-          {% match theme %}
-            {% when None %}
-          <div class="nav-item" id="dark-switch">
-            <a href="/theme?pref=dark" class="nav-button" title="switch to dark" aria-label="switch to dark">
-              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9 9 0 0 1-.5-17.986V3c-.354.966-.5 1.911-.5 3a9 9 0 0 0 9 9c.239 0 .254.018.488 0A9.004 9.004 0 0 1 12 21Z"/>
-              </svg>
-            </a>
+        <div class="nav-group">
+          {% block nav_actions %}{% endblock %}
+          <div class="theme-switcher">
+            {% match theme %}
+              {% when None %}
+                <a href="/theme?pref=dark" class="theme-opt" title="dark mode">
+                  <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M10 7.2A4 4 0 0 1 4.8 2a4.2 4.2 0 1 0 5.2 5.2z"/></svg>
+                </a>
+                <a href="/theme?pref=light" class="theme-opt" title="light mode">
+                  <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.2"/><path d="M6 1v1.4M6 9.6V11M1 6h1.4M9.6 6H11M2.4 2.4l1 1M8.6 8.6l1 1M2.4 9.6l1-1M8.6 3.4l1-1"/></svg>
+                </a>
+                <a href="/theme?pref=system" class="theme-opt active" title="auto mode">
+                  <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2" width="9" height="6.5" rx="1"/><path d="M4.5 10.5h3M6 8.5v2"/></svg>
+                </a>
+              {% when Some with (Theme::System) %}
+                <a href="/theme?pref=dark" class="theme-opt" title="dark mode">
+                  <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M10 7.2A4 4 0 0 1 4.8 2a4.2 4.2 0 1 0 5.2 5.2z"/></svg>
+                </a>
+                <a href="/theme?pref=light" class="theme-opt" title="light mode">
+                  <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.2"/><path d="M6 1v1.4M6 9.6V11M1 6h1.4M9.6 6H11M2.4 2.4l1 1M8.6 8.6l1 1M2.4 9.6l1-1M8.6 3.4l1-1"/></svg>
+                </a>
+                <a href="/theme?pref=system" class="theme-opt active" title="auto mode">
+                  <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2" width="9" height="6.5" rx="1"/><path d="M4.5 10.5h3M6 8.5v2"/></svg>
+                </a>
+              {% when Some with (Theme::Dark) %}
+                <a href="/theme?pref=dark" class="theme-opt active" title="dark mode">
+                  <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M10 7.2A4 4 0 0 1 4.8 2a4.2 4.2 0 1 0 5.2 5.2z"/></svg>
+                </a>
+                <a href="/theme?pref=light" class="theme-opt" title="light mode">
+                  <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.2"/><path d="M6 1v1.4M6 9.6V11M1 6h1.4M9.6 6H11M2.4 2.4l1 1M8.6 8.6l1 1M2.4 9.6l1-1M8.6 3.4l1-1"/></svg>
+                </a>
+                <a href="/theme?pref=system" class="theme-opt" title="auto mode">
+                  <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2" width="9" height="6.5" rx="1"/><path d="M4.5 10.5h3M6 8.5v2"/></svg>
+                </a>
+              {% when Some with (Theme::Light) %}
+                <a href="/theme?pref=dark" class="theme-opt" title="dark mode">
+                  <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M10 7.2A4 4 0 0 1 4.8 2a4.2 4.2 0 1 0 5.2 5.2z"/></svg>
+                </a>
+                <a href="/theme?pref=light" class="theme-opt active" title="light mode">
+                  <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.2"/><path d="M6 1v1.4M6 9.6V11M1 6h1.4M9.6 6H11M2.4 2.4l1 1M8.6 8.6l1 1M2.4 9.6l1-1M8.6 3.4l1-1"/></svg>
+                </a>
+                <a href="/theme?pref=system" class="theme-opt" title="auto mode">
+                  <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="1.5" y="2" width="9" height="6.5" rx="1"/><path d="M4.5 10.5h3M6 8.5v2"/></svg>
+                </a>
+            {% endmatch %}
           </div>
-            {% when Some with (Theme::System) %}
-          <div class="nav-item" id="dark-switch">
-            <a href="/theme?pref=dark" class="nav-button" title="switch to dark" aria-label="switch to dark">
-              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 21a9 9 0 0 1-.5-17.986V3c-.354.966-.5 1.911-.5 3a9 9 0 0 0 9 9c.239 0 .254.018.488 0A9.004 9.004 0 0 1 12 21Z"/>
-              </svg>
-            </a>
-          </div>
-            {% when Some with (Theme::Dark) %}
-          <div class="nav-item" id="light-switch">
-            <a href="/theme?pref=light" class="nav-button" title="switch to light" aria-label="switch to light">
-              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5V3m0 18v-2M7.05 7.05 5.636 5.636m12.728 12.728L16.95 16.95M5 12H3m18 0h-2M7.05 16.95l-1.414 1.414M18.364 5.636 16.95 7.05M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"/>
-              </svg>
-            </a>
-          </div>
-            {% when Some with (Theme::Light) %}
-          <div class="nav-item" id="system-switch"> <a href="/theme?pref=system" class="nav-button" title="switch to system" aria-label="switch to system">
-              <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                <path stroke="currentColor" stroke-linecap="square" stroke-linejoin="round" stroke-width="2" d="M10 19H5a1 1 0 0 1-1-1v-1a3 3 0 0 1 3-3h2m10 1a3 3 0 0 1-3 3m3-3a3 3 0 0 0-3-3m3 3h1m-4 3a3 3 0 0 1-3-3m3 3v1m-3-4a3 3 0 0 1 3-3m-3 3h-1m4-3v-1m-2.121 1.879-.707-.707m5.656 5.656-.707-.707m-4.242 0-.707.707m5.656-5.656-.707.707M12 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-              </svg>
-            </a>
-          </div>
-          {% endmatch %}
         </div>
       </header>
-      <main>
-        {% block content %}{% endblock %}
-      </main>
+      <div id="content-area">
+        <main>
+          {% block content %}{% endblock %}
+        </main>
+        {% block panel %}{% endblock %}
+      </div>
     </div>
+    {% endblock %}
     <div id="toast" class="toast hidden"></div>
   </body>
 </html>

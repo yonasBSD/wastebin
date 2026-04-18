@@ -177,6 +177,10 @@ fn make_app(state: AppState, timeout: Duration, max_body_size: usize) -> Router 
             get(async |State(page): State<Page>| page.assets.css.light.clone()),
         )
         .route(
+            state.page.assets.css.no_js.route(),
+            get(async |State(page): State<Page>| page.assets.css.no_js.clone()),
+        )
+        .route(
             state.page.assets.index_js.route(),
             get(async |State(page): State<Page>| page.assets.index_js.clone()),
         )
@@ -240,7 +244,13 @@ async fn start() -> Result<(), Box<dyn std::error::Error>> {
     tracing::debug!("restricting maximum body size to {max_body_size} bytes");
     tracing::debug!("enforcing a http timeout of {timeout:#?}");
 
-    let page = Arc::new(page::Page::new(title, base_url, theme, expirations));
+    let page = Arc::new(page::Page::new(
+        title,
+        base_url,
+        theme,
+        expirations,
+        max_body_size,
+    ));
     let highlighter = Arc::new(wastebin_highlight::Highlighter::default());
     let state = AppState {
         db,

@@ -2,85 +2,173 @@ function $(id) {
   return document.getElementById(id);
 }
 
-function dropHandler(ev) {
-  ev.preventDefault();
+const lineNumbers = $("line-numbers");
+const textarea = $("text");
 
-  if (ev.dataTransfer.items) {
-    const item = ev.dataTransfer.items[0];
+function updateLineNumbers() {
+  const count = Math.max(1, textarea.value.split("\n").length);
+  let html = "";
+  for (let i = 1; i <= count; i++) {
+    html += "<div>" + i + "</div>";
+  }
+  lineNumbers.innerHTML = html;
+}
 
-    if (item.kind === 'file') {
-      item.getAsFile().text().then((value) => $("text").value = value);
-    }
+function syncScroll() {
+  lineNumbers.scrollTop = textarea.scrollTop;
+}
+
+textarea.addEventListener("input", updateLineNumbers);
+textarea.addEventListener("scroll", syncScroll);
+updateLineNumbers();
+
+const MAX_BYTES = parseInt($("stats").dataset.maxBytes, 10) || 1024 * 1024;
+
+function formatSize(bytes) {
+  if (bytes >= 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + " mb";
+  return (bytes / 1024).toFixed(0) + " kb";
+}
+
+$("progress-limit").textContent = "limit " + formatSize(MAX_BYTES);
+
+function updateStats() {
+  const text = textarea.value;
+  const lines = Math.max(1, text.split("\n").length);
+  const chars = text.length;
+  let bytes;
+  try { bytes = new Blob([text]).size; } catch(e) { bytes = text.length; }
+
+  $("stat-lines").textContent = lines;
+  $("stat-chars").textContent = chars;
+  $("stat-bytes").textContent = bytes.toLocaleString();
+
+  const pct = Math.min(100, (bytes / MAX_BYTES) * 100);
+  const fill = $("progress-fill");
+  fill.style.width = pct + "%";
+  if (pct > 85) {
+    fill.classList.add("warn");
   } else {
-    const item = ev.dataTransfer.files[0];
-    item.text().then((value) => $("text").value = value);
+    fill.classList.remove("warn");
   }
+  $("progress-kb").textContent = (bytes / 1024).toFixed(1) + " kb";
 }
 
-function dragOverHandler(ev) {
-  ev.preventDefault();
-}
+textarea.addEventListener("input", updateStats);
+updateStats();
 
-function keyDownHandler(ev) {
-  if (ev.ctrlKey && ev.key == 's') {
-    ev.preventDefault();
+const langSelect = $("langs");
+const langFilter = $("filter");
 
-    $("text").form.submit();
+langFilter.addEventListener("input", function() {
+  const term = langFilter.value.toLowerCase();
+  for (const opt of langSelect.options) {
+    const name = opt.text.toLowerCase();
+    const ext = opt.value.toLowerCase();
+    opt.hidden = !(name.includes(term) || ext.includes(term));
   }
+});
+
+const encryptToggle = $("encrypt-toggle");
+const passwordGroup = $("password-group");
+
+if (encryptToggle && passwordGroup) {
+  encryptToggle.addEventListener("change", function() {
+    if (encryptToggle.checked) {
+      passwordGroup.classList.add("shown");
+      $("password").focus();
+    } else {
+      passwordGroup.classList.remove("shown");
+      $("password").value = "";
+    }
+  });
 }
 
-function openFile() {
-  let input = document.createElement("input");
-  input.type = "file";
-  input.onchange = ev => {
-    const item = ev.target.files[0];
-    let titleInput = $("title");
+$("burn-after-reading").addEventListener("change", function() {
+  const disabled = this.checked;
+  const radios = document.querySelectorAll('#expiry-list input[type="radio"]');
+  for (const radio of radios) {
+    radio.disabled = disabled;
+  }
+});
 
-    // Iterate through the `langs` <select> and
-    // try to match the value with the extension. If we have one, select it.
-    const extension = item.name.split(".").pop().toLowerCase();
-    const langSelect = $("langs");
+const overlay = $("drop-overlay");
+let dragCounter = 0;
 
-    for (i = 0; i < langSelect.length; i++) {
-      if (langSelect[i].value == extension) {
-        langSelect[i].selected = true;
-        break;
+const editorWrap = $("editor-wrap");
+
+editorWrap.addEventListener("dragenter", function(e) {
+  e.preventDefault();
+  dragCounter++;
+  overlay.classList.add("active");
+});
+
+editorWrap.addEventListener("dragleave", function(e) {
+  e.preventDefault();
+  dragCounter--;
+  if (dragCounter <= 0) {
+    dragCounter = 0;
+    overlay.classList.remove("active");
+  }
+});
+
+editorWrap.addEventListener("dragover", function(e) {
+  e.preventDefault();
+});
+
+editorWrap.addEventListener("drop", function(e) {
+  e.preventDefault();
+  dragCounter = 0;
+  overlay.classList.remove("active");
+
+  const files = e.dataTransfer && e.dataTransfer.files;
+  if (files && files.length > 0) {
+    loadFile(files[0]);
+  }
+});
+
+function loadFile(file) {
+  file.text().then(function(value) {
+    textarea.value = value.replace(/\n$/, "");
+    updateLineNumbers();
+    updateStats();
+
+    // Infer extension from filename
+    const name = file.name || "";
+    const dot = name.lastIndexOf(".");
+    if (dot > 0) {
+      const ext = name.slice(dot + 1).toLowerCase();
+      for (let i = 0; i < langSelect.options.length; i++) {
+        if (langSelect.options[i].value === ext) {
+          langSelect.options[i].selected = true;
+          break;
+        }
       }
+      langFilter.value = "";
+      langFilter.dispatchEvent(new Event("input"));
     }
 
-    // Set title to the filename.
-    titleInput.value = item.name;
+    // Set title to filename
+    $("title").value = file.name;
+  });
+}
 
-    // Set <textarea> to file content.
-    item.text().then((value) => $("text").value = value);
+$("open").addEventListener("click", function() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.onchange = function(e) {
+    const file = e.target.files[0];
+    if (file) loadFile(file);
   };
-
   input.click();
-}
+});
 
-function filterLangs(ev) {
-  ev.preventDefault();
-  let langs = $("langs");
-  const term = $("filter").value.toLowerCase();
-
-  for (option of langs) {
-    if (option.innerText.toLowerCase().includes(term)) {
-      option.style.display = "";
-    }
-    else {
-      option.style.display = "none";
-    }
+textarea.addEventListener("keydown", function(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+    e.preventDefault();
+    $("form").submit();
   }
-}
-
-function burnCheckboxHandler() {
-  $("expiration-list").disabled = $("burn-after-reading").checked;
-}
-
-$("text").addEventListener("drop", dropHandler);
-$("text").addEventListener("dragover", dragOverHandler);
-$("text").addEventListener("keydown", keyDownHandler);
-$("open").addEventListener("click", openFile);
-$("filter").addEventListener("change", filterLangs);
-$("filter").addEventListener("keyup", filterLangs);
-$("burn-after-reading").addEventListener("click", burnCheckboxHandler);
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+    e.preventDefault();
+    $("form").submit();
+  }
+});

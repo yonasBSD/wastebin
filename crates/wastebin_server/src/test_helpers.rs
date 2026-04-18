@@ -33,6 +33,7 @@ impl Client {
             url::Url::parse("https://localhost:8888").unwrap(),
             Theme::Ayu,
             expirations,
+            1024 * 1024,
         ));
         let state = crate::AppState {
             db,

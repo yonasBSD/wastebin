@@ -42,6 +42,7 @@ function onKey(e) {
   }
   else if (e.key == 'y') {
     navigator.clipboard.writeText(window.location.href);
+    showToast("Copied URL", 1500);
   }
   else if (e.key == 'd') {
     window.location.href = "/dl" + window.location.pathname;
