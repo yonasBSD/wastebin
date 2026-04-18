@@ -570,7 +570,6 @@ header {
   font-size: 10.5px;
   color: var(--fg-muted);
   cursor: pointer;
-  transition: color 100ms, background 100ms;
 }
 
 .theme-opt:hover {
