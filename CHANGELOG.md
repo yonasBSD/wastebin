@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- Line and range highlight for anchored paste views.
+
 ### Changed
 
 - Revamped the user interface for a little less minimalist but slightly sleeker
