@@ -368,9 +368,9 @@ mod tests {
 
     #[test]
     fn formatting() {
-        assert_eq!(format!("{}", Expiration::from_secs(30)), "30 seconds");
+        assert_eq!(format!("{}", Expiration::from_secs(30)), "30 secs");
         assert_eq!(format!("{}", Expiration::from_secs(60)), "1 minute");
-        assert_eq!(format!("{}", Expiration::from_secs(60 * 2)), "2 minutes");
+        assert_eq!(format!("{}", Expiration::from_secs(60 * 2)), "2 mins");
         assert_eq!(format!("{}", Expiration::from_secs(60 * 60)), "1 hour");
         assert_eq!(format!("{}", Expiration::from_secs(60 * 60 * 2)), "2 hours");
         assert_eq!(format!("{}", Expiration::from_secs(60 * 60 * 24)), "1 day");
@@ -416,23 +416,23 @@ mod tests {
                         + 42
                 )
             ),
-            "2 years, 2 weeks, 3 days, 23 hours, 59 minutes, 42 seconds"
+            "2 years, 2 weeks, 3 days, 23 hours, 59 mins, 42 secs"
         );
         assert_eq!(
             format!(
                 "{}",
                 Expiration::from_secs(60 * 60 * 24 * 7 * 8 + 60 * 60 * 24 * 2 + 23 * 60 * 60 + 42)
             ),
-            "1 month, 4 weeks, 23 hours, 42 seconds"
+            "1 month, 4 weeks, 23 hours, 42 secs"
         );
 
         assert_eq!(
             format!("{}", "30s".parse::<Expiration>().unwrap()),
-            "30 seconds"
+            "30 secs"
         );
         assert_eq!(
             format!("{}", "59m".parse::<Expiration>().unwrap()),
-            "59 minutes"
+            "59 mins"
         );
         assert_eq!(
             format!("{}", "3h".parse::<Expiration>().unwrap()),
