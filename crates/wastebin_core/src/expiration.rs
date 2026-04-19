@@ -152,7 +152,7 @@ impl Display for Expiration {
 
         if let Some((minutes, rem)) = div(secs, 60) {
             if minutes > 1 {
-                parts.push(format!("{minutes} minutes"));
+                parts.push(format!("{minutes} mins"));
             } else {
                 parts.push(String::from("1 minute"));
             }
@@ -160,7 +160,7 @@ impl Display for Expiration {
         }
 
         if secs > 0 {
-            parts.push(format!("{secs} seconds"));
+            parts.push(format!("{secs} secs"));
         }
 
         f.write_str(&parts.join(", "))
