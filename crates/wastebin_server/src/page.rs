@@ -11,6 +11,7 @@ pub(crate) struct Assets {
     pub index_js: Asset,
     pub paste_js: Asset,
     pub burn_js: Asset,
+    pub password_toggle_js: Asset,
 }
 
 pub(crate) struct Page {
@@ -70,6 +71,11 @@ impl Assets {
                 "burn",
                 Kind::Js,
                 include_bytes!("javascript/burn.js").to_vec(),
+            ),
+            password_toggle_js: Asset::new_hashed(
+                "password-toggle",
+                Kind::Js,
+                include_bytes!("javascript/password-toggle.js").to_vec(),
             ),
         }
     }

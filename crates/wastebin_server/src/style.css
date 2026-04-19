@@ -442,6 +442,47 @@ header {
   display: block;
 }
 
+.password-input-wrap {
+  position: relative;
+}
+
+.password-input-wrap input {
+  padding-right: 30px;
+  width: 100%;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--fg-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 3px;
+}
+
+.password-toggle:hover {
+  color: var(--fg);
+}
+
+.password-toggle .eye-hide {
+  display: none;
+}
+
+.password-toggle.shown .eye-show {
+  display: none;
+}
+
+.password-toggle.shown .eye-hide {
+  display: block;
+}
+
 .stats {
   margin-bottom: 10px;
 }
@@ -704,7 +745,8 @@ tr.line-highlight td.line {
   opacity: 0.9;
 }
 
-.flex-center input[type="password"] {
+.flex-center input[type="password"],
+.flex-center input[type="text"] {
   width: 100%;
   background: var(--panel-bg2);
   border: 1px solid var(--border-soft);
@@ -716,7 +758,8 @@ tr.line-highlight td.line {
   outline: none;
 }
 
-.flex-center input[type="password"]:focus {
+.flex-center input[type="password"]:focus,
+.flex-center input[type="text"]:focus {
   border-color: var(--accent);
 }
 

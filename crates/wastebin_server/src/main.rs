@@ -192,6 +192,10 @@ fn make_app(state: AppState, timeout: Duration, max_body_size: usize) -> Router 
             state.page.assets.burn_js.route(),
             get(async |State(page): State<Page>| page.assets.burn_js.clone()),
         )
+        .route(
+            state.page.assets.password_toggle_js.route(),
+            get(async |State(page): State<Page>| page.assets.password_toggle_js.clone()),
+        )
         .route("/", get(html::index::get).post(insert::api::post))
         .route("/robots.txt", get(robots::get))
         .route("/theme", get(theme::get))
