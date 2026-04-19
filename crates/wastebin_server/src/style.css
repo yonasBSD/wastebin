@@ -631,6 +631,11 @@ td.line {
   word-wrap: break-word;
 }
 
+tr.line-highlight td.line-number,
+tr.line-highlight td.line {
+  background: var(--accent-bg);
+}
+
 .markup.underline.link > a, .markup.underline.link > a:visited {
   color: inherit;
 }

@@ -5,6 +5,51 @@ function $(id) {
 document.addEventListener('keydown', onKey);
 $("copy-button").addEventListener("click", copy);
 
+function highlightLines(scroll) {
+  document.querySelectorAll('tr.line-highlight').forEach(tr => {
+    tr.classList.remove('line-highlight');
+  });
+
+  const match = window.location.hash.match(/^#L(\d+)(?:-L(\d+))?$/);
+  if (!match) return;
+
+  const a = parseInt(match[1], 10);
+  const b = match[2] ? parseInt(match[2], 10) : a;
+  const from = Math.min(a, b);
+  const to = Math.max(a, b);
+
+  for (let i = from; i <= to; i++) {
+    const td = document.getElementById('L' + i);
+    if (td && td.parentElement) {
+      td.parentElement.classList.add('line-highlight');
+    }
+  }
+
+  if (scroll && match[2]) {
+    const firstTd = document.getElementById('L' + from);
+    if (firstTd) firstTd.scrollIntoView({ block: 'center' });
+  }
+}
+
+window.addEventListener('hashchange', () => highlightLines(true));
+highlightLines(true);
+
+document.querySelectorAll('td.line-number > a').forEach(a => {
+  a.addEventListener('click', (e) => {
+    if (!e.shiftKey) return;
+    const m = a.getAttribute('href').match(/^#L(\d+)$/);
+    const current = window.location.hash.match(/^#L(\d+)(?:-L\d+)?$/);
+    if (!m || !current) return;
+    e.preventDefault();
+    const clicked = parseInt(m[1], 10);
+    const base = parseInt(current[1], 10);
+    const from = Math.min(base, clicked);
+    const to = Math.max(base, clicked);
+    history.replaceState(null, '', from === to ? '#L' + from : '#L' + from + '-L' + to);
+    highlightLines(false);
+  });
+});
+
 function showToast(text, timeout) {
   let toast = $("toast");
 
