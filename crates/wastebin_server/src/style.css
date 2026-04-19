@@ -321,13 +321,12 @@ header {
 
 .expiry-list {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 .expiry-btn {
-  display: flex;
-  align-items: center;
+  display: inline-flex;
   cursor: pointer;
 }
 
@@ -339,35 +338,30 @@ header {
 }
 
 .expiry-btn span {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  width: 100%;
-  padding: 6px 10px;
+  padding: 4px 8px;
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
   color: var(--fg-dim);
+  background: var(--panel-bg2);
+  border: 1px solid var(--border-soft);
   border-radius: 3px;
-  transition: background 100ms, color 100ms;
+  transition: background 100ms, color 100ms, border-color 100ms;
 }
 
 .expiry-btn:hover span {
-  background: var(--panel-bg2);
+  background: var(--panel-bg);
 }
 
 .expiry-btn input[type="radio"]:checked + span {
   background: var(--accent-bg);
   color: var(--accent-fg);
+  border-color: var(--accent);
 }
 
-.expiry-dot {
-  display: none;
-  font-size: 6px;
-  margin-left: auto;
-  color: var(--accent);
-}
-
-.expiry-btn input[type="radio"]:checked + span .expiry-dot {
-  display: block;
+.expiry-btn input[type="radio"]:focus-visible + span {
+  border-color: var(--accent);
 }
 
 .expiry-btn input[type="radio"]:disabled + span {

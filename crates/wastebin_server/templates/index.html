@@ -107,7 +107,7 @@
             {% for expiration in page.expirations %}
             <label class="expiry-btn">
               <input type="radio" name="expires" value="{{ expiration.duration.as_secs() }}" {% if expiration.default %}checked{% endif %}>
-              <span>{{ expiration }}<i class="expiry-dot">&#9679;</i></span>
+              <span>{{ expiration }}</span>
             </label>
             {% endfor %}
           </div>
