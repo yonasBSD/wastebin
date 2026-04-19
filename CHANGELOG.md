@@ -2,14 +2,19 @@
 
 ## Unreleased
 
-### Added
 
-- Line and range highlight for anchored paste views.
+## 3.5.0
+
+**2026-04-19**
 
 ### Changed
 
 - Revamped the user interface for a little less minimalist but slightly sleeker
   and cleaner look.
+
+### Added
+
+- Line and range highlight for anchored paste views.
 
 
 ## 3.4.1
