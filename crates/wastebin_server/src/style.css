@@ -980,6 +980,62 @@ textarea:focus-visible {
   background: var(--panel-bg2);
 }
 
+.markdown-body blockquote[class^="markdown-alert-"] {
+  color: var(--fg);
+  border-left-width: 4px;
+  padding: 0.6em 1em;
+}
+
+.markdown-body .markdown-alert-title {
+  margin: 0 0 0.4em;
+  font-weight: 600;
+  font-size: var(--fs-sm);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.markdown-body .markdown-alert-title + * { margin-top: 0; }
+
+.markdown-body .markdown-alert-note {
+  border-left-color: light-dark(oklch(0.52 0.14 250), oklch(0.72 0.14 250));
+  background: light-dark(oklch(0.52 0.14 250 / 0.08), oklch(0.72 0.14 250 / 0.12));
+}
+.markdown-body .markdown-alert-note .markdown-alert-title {
+  color: light-dark(oklch(0.42 0.14 250), oklch(0.82 0.12 250));
+}
+
+.markdown-body .markdown-alert-tip {
+  border-left-color: light-dark(oklch(0.52 0.15 150), oklch(0.72 0.15 150));
+  background: light-dark(oklch(0.52 0.15 150 / 0.08), oklch(0.72 0.15 150 / 0.12));
+}
+.markdown-body .markdown-alert-tip .markdown-alert-title {
+  color: light-dark(oklch(0.42 0.15 150), oklch(0.82 0.13 150));
+}
+
+.markdown-body .markdown-alert-important {
+  border-left-color: light-dark(oklch(0.52 0.17 300), oklch(0.72 0.16 300));
+  background: light-dark(oklch(0.52 0.17 300 / 0.08), oklch(0.72 0.16 300 / 0.12));
+}
+.markdown-body .markdown-alert-important .markdown-alert-title {
+  color: light-dark(oklch(0.42 0.17 300), oklch(0.82 0.14 300));
+}
+
+.markdown-body .markdown-alert-warning {
+  border-left-color: light-dark(oklch(0.58 0.15 75), oklch(0.78 0.15 75));
+  background: light-dark(oklch(0.58 0.15 75 / 0.08), oklch(0.78 0.15 75 / 0.12));
+}
+.markdown-body .markdown-alert-warning .markdown-alert-title {
+  color: light-dark(oklch(0.48 0.15 75), oklch(0.85 0.14 75));
+}
+
+.markdown-body .markdown-alert-caution {
+  border-left-color: var(--danger);
+  background: var(--danger-bg);
+}
+.markdown-body .markdown-alert-caution .markdown-alert-title {
+  color: var(--danger);
+}
+
 .markdown-body hr {
   height: 1px;
   border: 0;

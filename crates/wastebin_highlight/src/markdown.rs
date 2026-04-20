@@ -1,4 +1,6 @@
-use pulldown_cmark::{CodeBlockKind, CowStr, Event, Options, Parser, Tag, TagEnd, html};
+use pulldown_cmark::{
+    BlockQuoteKind, CodeBlockKind, CowStr, Event, Options, Parser, Tag, TagEnd, html,
+};
 
 use crate::highlight::Error;
 use crate::{Highlighter, Html};
@@ -10,17 +12,18 @@ pub fn render(text: &str, highlighter: &Highlighter) -> Result<Html, Error> {
     let options = Options::ENABLE_TABLES
         | Options::ENABLE_STRIKETHROUGH
         | Options::ENABLE_TASKLISTS
-        | Options::ENABLE_FOOTNOTES;
+        | Options::ENABLE_FOOTNOTES
+        | Options::ENABLE_GFM;
 
     let parser = Parser::new_ext(text, options);
-    let events = rewrite_code_blocks(parser, highlighter)?;
+    let events = rewrite_events(parser, highlighter)?;
 
     let mut out = String::with_capacity(text.len());
     html::push_html(&mut out, events.into_iter());
     Ok(Html::new(out))
 }
 
-fn rewrite_code_blocks<'a>(
+fn rewrite_events<'a>(
     parser: Parser<'a>,
     highlighter: &Highlighter,
 ) -> Result<Vec<Event<'a>>, Error> {
@@ -43,6 +46,10 @@ fn rewrite_code_blocks<'a>(
                     out.push(Event::Html(CowStr::from(html)));
                 }
             }
+            Event::Start(Tag::BlockQuote(Some(kind))) => {
+                out.push(Event::Start(Tag::BlockQuote(Some(kind))));
+                out.push(Event::Html(CowStr::from(alert_title(kind))));
+            }
             Event::Html(raw) | Event::InlineHtml(raw) => {
                 out.push(Event::Text(raw));
             }
@@ -51,6 +58,18 @@ fn rewrite_code_blocks<'a>(
     }
 
     Ok(out)
+}
+
+/// Return the HTML injected at the top of a GFM alert blockquote.
+fn alert_title(kind: BlockQuoteKind) -> String {
+    let label = match kind {
+        BlockQuoteKind::Note => "Note",
+        BlockQuoteKind::Tip => "Tip",
+        BlockQuoteKind::Important => "Important",
+        BlockQuoteKind::Warning => "Warning",
+        BlockQuoteKind::Caution => "Caution",
+    };
+    format!("<p class=\"markdown-alert-title\">{label}</p>")
 }
 
 #[cfg(test)]
@@ -124,6 +143,51 @@ mod tests {
         let md = "```\"><script>\ncode\n```\n";
         let html = render_string(md, &Highlighter::default())?;
         assert!(!html.contains("<script>"), "got: {html}");
+        Ok(())
+    }
+
+    #[test]
+    fn gfm_alert_note() -> Result<(), Box<dyn std::error::Error>> {
+        let md = "> [!NOTE]\n> body\n";
+        let html = render_string(md, &Highlighter::default())?;
+        assert!(
+            html.contains("<blockquote class=\"markdown-alert-note\">"),
+            "got: {html}"
+        );
+        assert!(
+            html.contains("<p class=\"markdown-alert-title\">Note</p>"),
+            "got: {html}"
+        );
+        assert!(html.contains("body"), "got: {html}");
+        Ok(())
+    }
+
+    #[test]
+    fn gfm_alert_variants() -> Result<(), Box<dyn std::error::Error>> {
+        for (marker, class, label) in [
+            ("TIP", "markdown-alert-tip", "Tip"),
+            ("IMPORTANT", "markdown-alert-important", "Important"),
+            ("WARNING", "markdown-alert-warning", "Warning"),
+            ("CAUTION", "markdown-alert-caution", "Caution"),
+        ] {
+            let md = format!("> [!{marker}]\n> body\n");
+            let html = render_string(&md, &Highlighter::default())?;
+            assert!(html.contains(class), "{marker}: {html}");
+            assert!(
+                html.contains(&format!(
+                    "<p class=\"markdown-alert-title\">{label}</p>"
+                )),
+                "{marker}: {html}"
+            );
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn plain_blockquote_is_not_an_alert() -> Result<(), Box<dyn std::error::Error>> {
+        let html = render_string("> just a quote\n", &Highlighter::default())?;
+        assert!(html.contains("<blockquote>"), "got: {html}");
+        assert!(!html.contains("markdown-alert"), "got: {html}");
         Ok(())
     }
 
