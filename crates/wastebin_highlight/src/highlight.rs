@@ -1,6 +1,6 @@
 use std::fmt::Write;
 
-use syntect::html::{ClassStyle, line_tokens_to_classed_spans};
+use syntect::html::{ClassStyle, ClassedHTMLGenerator, line_tokens_to_classed_spans};
 use syntect::parsing::{
     BasicScopeStackOp, ParseState, Scope, ScopeStack, ScopeStackOp, SyntaxReference, SyntaxSet,
 };
@@ -230,6 +230,36 @@ impl Highlighter {
         html.push_str("</tbody></table>");
 
         Ok(Html(html))
+    }
+
+    /// Highlight a fenced code block. `token` is the info string (e.g. `rust`, `py`); unknown or
+    /// empty tokens fall back to plain text. Unlike [`Highlighter::highlight`], the output is a
+    /// compact `<pre><code>` without line numbers, suitable for embedding into rendered Markdown.
+    pub fn highlight_code_block(&self, text: &str, token: &str) -> Result<String, Error> {
+        let syntax = self
+            .syntax_set
+            .find_syntax_by_token(token)
+            .unwrap_or_else(|| self.syntax_set.find_syntax_plain_text());
+
+        let mut generator =
+            ClassedHTMLGenerator::new_with_class_style(syntax, &self.syntax_set, ClassStyle::Spaced);
+
+        for line in LinesWithEndings::from(text) {
+            generator.parse_html_for_line_which_includes_newline(line)?;
+        }
+
+        let inner = generator.finalize();
+        let is_safe_token = !token.is_empty()
+            && token
+                .chars()
+                .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_');
+        let class = if is_safe_token {
+            format!("code-block language-{token}")
+        } else {
+            String::from("code-block")
+        };
+
+        Ok(format!("<pre class=\"{class}\"><code>{inner}</code></pre>"))
     }
 
     /// Return iterator over all available [`Syntax`]es with their canonical name and usual file
