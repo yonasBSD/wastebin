@@ -27,6 +27,7 @@ to released versions here:
 * comes as a single binary with low memory footprint
 * compresses pastes using [zstd](https://github.com/facebook/zstd)
 * syntax highlighting for > 170 languages with [syntect](https://github.com/trishume/syntect)
+* renders Markdown pastes to HTML, including GitHub-flavored tables, task lists and admonitions
 * comes with [eight color themes](https://matze.github.io/wastebin/) in light and dark mode
 * encrypts entries using ChaCha20Poly1305 and argon2 hashed passwords
 * allows deletion after expiration, after reading or by anonymous owners
@@ -157,6 +158,24 @@ When viewing a paste, you can use
 
 To paste some text you can also use the <kbd>ctrl</kbd>+<kbd>s</kbd> key
 combination.
+
+
+### Markdown rendering
+
+Pastes created with an `md` or `markdown` extension can be viewed as rendered
+HTML at `/md/{id}`. A toggle in the paste view switches between the syntax
+highlighted source and the rendered output. The renderer supports
+GitHub-flavored Markdown, including tables, task lists and admonitions
+(`> [!NOTE]`, `> [!WARNING]`, etc.); fenced code blocks are syntax highlighted
+with the same theme as regular pastes.
+
+Raw HTML inside the Markdown source is run through the
+[ammonia](https://github.com/rust-ammonia/ammonia) sanitizer, so safe tags like
+`<details>`, `<summary>` or `<kbd>` are preserved while `<script>`, inline
+event handlers and `javascript:` URLs are stripped. To permit external images
+embedded via `![alt](https://…)`, the Content Security Policy is relaxed to
+`img-src *` for `/md/*` responses only; all other routes keep the strict
+default.
 
 
 ### Configuration

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- Sanitized Markdown rendering toggleable with `m` or using a new button.
+
 
 ## 3.5.0
 
