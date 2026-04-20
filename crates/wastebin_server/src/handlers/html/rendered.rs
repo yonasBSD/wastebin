@@ -149,5 +149,37 @@ mod tests {
 
         Ok(())
     }
+
+    #[tokio::test]
+    async fn rendered_response_relaxes_img_src() -> Result<(), Box<dyn std::error::Error>> {
+        let client = Client::new(StoreCookies(false)).await;
+        let data = Entry {
+            text: String::from("# picture\n\n![cat](https://example.com/cat.png)\n"),
+            extension: Some(String::from("md")),
+            ..Default::default()
+        };
+
+        let res = client.post_form().form(&data).send().await?;
+        let location = res.headers().get("location").unwrap().to_str()?.to_owned();
+
+        let rendered = client.get(&format!("/md{location}")).send().await?;
+        let csp = rendered
+            .headers()
+            .get("content-security-policy")
+            .unwrap()
+            .to_str()?
+            .to_owned();
+        assert!(csp.contains("img-src * data:"), "csp: {csp}");
+
+        let source = client.get(&location).send().await?;
+        let csp = source
+            .headers()
+            .get("content-security-policy")
+            .unwrap()
+            .to_str()?;
+        assert!(csp.contains("img-src 'self' data:"), "csp: {csp}");
+
+        Ok(())
+    }
 }
 

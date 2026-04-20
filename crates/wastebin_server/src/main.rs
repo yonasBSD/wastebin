@@ -80,14 +80,23 @@ impl FromRef<AppState> for Cache {
 }
 
 async fn security_headers_layer(req: Request, next: Next) -> impl IntoResponse {
-    const SECURITY_HEADERS: [(HeaderName, HeaderValue); 7] = [
+    // Rendered Markdown may embed remote images via `![](…)`; relax img-src for that route only.
+    const CSP_STRICT: HeaderValue = HeaderValue::from_static(
+        "default-src 'none'; script-src 'self'; img-src 'self' data: ; style-src 'self' data: ; font-src 'self' data: ; object-src 'none' ; base-uri 'none' ; frame-ancestors 'none' ; form-action 'self' ;",
+    );
+    const CSP_RENDERED: HeaderValue = HeaderValue::from_static(
+        "default-src 'none'; script-src 'self'; img-src * data: ; style-src 'self' data: ; font-src 'self' data: ; object-src 'none' ; base-uri 'none' ; frame-ancestors 'none' ; form-action 'self' ;",
+    );
+
+    let csp = if req.uri().path().starts_with("/md/") {
+        CSP_RENDERED
+    } else {
+        CSP_STRICT
+    };
+
+    let headers: [(HeaderName, HeaderValue); 7] = [
         (SERVER, HeaderValue::from_static(env!("CARGO_PKG_NAME"))),
-        (
-            CONTENT_SECURITY_POLICY,
-            HeaderValue::from_static(
-                "default-src 'none'; script-src 'self'; img-src 'self' data: ; style-src 'self' data: ; font-src 'self' data: ; object-src 'none' ; base-uri 'none' ; frame-ancestors 'none' ; form-action 'self' ;",
-            ),
-        ),
+        (CONTENT_SECURITY_POLICY, csp),
         (REFERRER_POLICY, HeaderValue::from_static("same-origin")),
         (X_CONTENT_TYPE_OPTIONS, HeaderValue::from_static("nosniff")),
         (X_FRAME_OPTIONS, HeaderValue::from_static("SAMEORIGIN")),
@@ -98,7 +107,7 @@ async fn security_headers_layer(req: Request, next: Next) -> impl IntoResponse {
         (X_XSS_PROTECTION, HeaderValue::from_static("1; mode=block")),
     ];
 
-    (SECURITY_HEADERS, next.run(req).await)
+    (headers, next.run(req).await)
 }
 
 async fn handle_service_errors(
