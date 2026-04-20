@@ -2,33 +2,27 @@ use askama::Template;
 use askama_web::WebTemplate;
 use axum::extract::{Form, Path, State};
 use axum::response::{IntoResponse, Response};
-use serde::Deserialize;
 
 use crate::cache::{Key, Mode};
 use crate::handlers::extract::{Theme, Uid};
+use crate::handlers::html::paste::PasswordForm;
 use crate::handlers::html::{ErrorResponse, PasswordInput, make_error};
 use crate::{Cache, Database, Highlighter, Page};
 use wastebin_core::crypto::Password;
 use wastebin_core::db;
 use wastebin_core::db::read::{Data, Entry, Metadata};
 use wastebin_core::expiration::Expiration;
+use wastebin_highlight::markdown;
 
-#[derive(Deserialize, Debug)]
-pub(crate) struct PasswordForm {
-    pub(crate) password: String,
-}
-
-/// Paste view showing the formatted paste.
+/// Page showing a Markdown paste rendered as HTML.
 #[derive(Template, WebTemplate)]
-#[template(path = "formatted.html")]
-pub(crate) struct Paste {
+#[template(path = "rendered.html")]
+pub(crate) struct Rendered {
     page: Page,
     key: Key,
     theme: Option<Theme>,
     can_delete: bool,
-    /// If the paste still in the database and can be fetched with another request.
     is_available: bool,
-    /// Expiration in case it was set.
     expiration: Option<Expiration>,
     html: String,
     title: Option<String>,
@@ -77,24 +71,24 @@ pub async fn get<E>(
             .zip(owner_uid)
             .is_some_and(|(Uid(user_uid), owner_uid)| user_uid == owner_uid);
 
-        let html = if let Some(html) = cache.get(&key, Mode::Source) {
-            tracing::trace!(?key, "found cached item");
-            html.into_inner()
+        let html = if let Some(cached) = cache.get(&key, Mode::Rendered) {
+            tracing::trace!(?key, "found cached rendered markdown");
+            cached.into_inner()
         } else {
-            let ext = key.ext.clone();
             let highlighter = highlighter.clone();
-            let html =
-                tokio::task::spawn_blocking(move || highlighter.highlight(text, ext)).await??;
+            let rendered =
+                tokio::task::spawn_blocking(move || markdown::render(&text, &highlighter))
+                    .await??;
 
             if is_available && no_password {
-                tracing::trace!(?key, "cache item");
-                cache.put(&key, Mode::Source, html.clone());
+                tracing::trace!(?key, "cache rendered markdown");
+                cache.put(&key, Mode::Rendered, rendered.clone());
             }
 
-            html.into_inner()
+            rendered.into_inner()
         };
 
-        let paste = Paste {
+        let rendered = Rendered {
             page: page.clone(),
             key,
             theme: theme.clone(),
@@ -105,7 +99,7 @@ pub async fn get<E>(
             title,
         };
 
-        Ok(paste.into_response())
+        Ok(rendered.into_response())
     }
     .await
     .map_err(|err| make_error(err, page, theme))
@@ -113,16 +107,47 @@ pub async fn get<E>(
 
 #[cfg(test)]
 mod tests {
+    use crate::handlers::insert::form::Entry;
     use crate::test_helpers::{Client, StoreCookies};
-    use reqwest::StatusCode;
+    use reqwest::{StatusCode, header};
 
     #[tokio::test]
-    async fn unknown_paste() -> Result<(), Box<dyn std::error::Error>> {
+    async fn renders_markdown_as_html() -> Result<(), Box<dyn std::error::Error>> {
+        let client = Client::new(StoreCookies(false)).await;
+        let data = Entry {
+            text: String::from("# Hello\n\n| a | b |\n|---|---|\n| 1 | 2 |\n"),
+            extension: Some(String::from("md")),
+            ..Default::default()
+        };
+
+        let res = client.post_form().form(&data).send().await?;
+        assert_eq!(res.status(), StatusCode::SEE_OTHER);
+        let location = res.headers().get("location").unwrap().to_str()?.to_owned();
+
+        let res = client
+            .get(&format!("/md{location}"))
+            .header(header::ACCEPT, "text/html; charset=utf-8")
+            .send()
+            .await?;
+
+        assert_eq!(res.status(), StatusCode::OK);
+
+        let body = res.text().await?;
+        assert!(body.contains("markdown-body"), "body: {body}");
+        assert!(body.contains("<h1>Hello</h1>"), "body: {body}");
+        assert!(body.contains("<th>a</th>"), "body: {body}");
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn missing_paste_is_not_found() -> Result<(), Box<dyn std::error::Error>> {
         let client = Client::new(StoreCookies(false)).await;
 
-        let res = client.get("/000000").send().await?;
+        let res = client.get("/md/000000").send().await?;
         assert_eq!(res.status(), StatusCode::NOT_FOUND);
 
         Ok(())
     }
 }
+

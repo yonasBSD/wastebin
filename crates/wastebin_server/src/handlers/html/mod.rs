@@ -2,6 +2,7 @@ pub mod burn;
 pub mod index;
 pub mod paste;
 pub mod qr;
+pub mod rendered;
 
 use askama::Template;
 use askama_web::WebTemplate;

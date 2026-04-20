@@ -1,12 +1,12 @@
 use pulldown_cmark::{CodeBlockKind, CowStr, Event, Options, Parser, Tag, TagEnd, html};
 
-use crate::Highlighter;
 use crate::highlight::Error;
+use crate::{Highlighter, Html};
 
 /// Render CommonMark `text` to HTML. Fenced code blocks with a known language are syntax
 /// highlighted via `highlighter`; unknown languages fall back to plain text. Raw HTML is
 /// disabled — any `<script>`-like input is rendered as visible text.
-pub fn render(text: &str, highlighter: &Highlighter) -> Result<String, Error> {
+pub fn render(text: &str, highlighter: &Highlighter) -> Result<Html, Error> {
     let options = Options::ENABLE_TABLES
         | Options::ENABLE_STRIKETHROUGH
         | Options::ENABLE_TASKLISTS
@@ -17,7 +17,7 @@ pub fn render(text: &str, highlighter: &Highlighter) -> Result<String, Error> {
 
     let mut out = String::with_capacity(text.len());
     html::push_html(&mut out, events.into_iter());
-    Ok(out)
+    Ok(Html::new(out))
 }
 
 fn rewrite_code_blocks<'a>(
@@ -57,9 +57,13 @@ fn rewrite_code_blocks<'a>(
 mod tests {
     use super::*;
 
+    fn render_string(text: &str, highlighter: &Highlighter) -> Result<String, Error> {
+        render(text, highlighter).map(Html::into_inner)
+    }
+
     #[test]
     fn heading() -> Result<(), Box<dyn std::error::Error>> {
-        let html = render("# Hello", &Highlighter::default())?;
+        let html = render_string("# Hello", &Highlighter::default())?;
         assert!(html.contains("<h1>Hello</h1>"), "got: {html}");
         Ok(())
     }
@@ -67,7 +71,7 @@ mod tests {
     #[test]
     fn table() -> Result<(), Box<dyn std::error::Error>> {
         let md = "| a | b |\n|---|---|\n| 1 | 2 |\n";
-        let html = render(md, &Highlighter::default())?;
+        let html = render_string(md, &Highlighter::default())?;
         assert!(html.contains("<table>"), "got: {html}");
         assert!(html.contains("<th>a</th>"), "got: {html}");
         Ok(())
@@ -75,7 +79,7 @@ mod tests {
 
     #[test]
     fn task_list() -> Result<(), Box<dyn std::error::Error>> {
-        let html = render("- [x] done\n- [ ] open\n", &Highlighter::default())?;
+        let html = render_string("- [x] done\n- [ ] open\n", &Highlighter::default())?;
         assert!(html.contains("type=\"checkbox\""), "got: {html}");
         assert!(html.contains("checked"), "got: {html}");
         Ok(())
@@ -83,7 +87,7 @@ mod tests {
 
     #[test]
     fn strikethrough() -> Result<(), Box<dyn std::error::Error>> {
-        let html = render("~~gone~~", &Highlighter::default())?;
+        let html = render_string("~~gone~~", &Highlighter::default())?;
         assert!(html.contains("<del>gone</del>"), "got: {html}");
         Ok(())
     }
@@ -91,7 +95,7 @@ mod tests {
     #[test]
     fn code_block_is_highlighted() -> Result<(), Box<dyn std::error::Error>> {
         let md = "```rust\nfn main() {}\n```\n";
-        let html = render(md, &Highlighter::default())?;
+        let html = render_string(md, &Highlighter::default())?;
         assert!(html.contains("class=\"code-block language-rust\""), "got: {html}");
         assert!(html.contains("<span class=\""), "got: {html}");
         Ok(())
@@ -100,7 +104,7 @@ mod tests {
     #[test]
     fn code_block_unknown_language_falls_back() -> Result<(), Box<dyn std::error::Error>> {
         let md = "```not-a-real-lang\nhello\n```\n";
-        let html = render(md, &Highlighter::default())?;
+        let html = render_string(md, &Highlighter::default())?;
         assert!(html.contains("<pre"), "got: {html}");
         assert!(html.contains("hello"), "got: {html}");
         Ok(())
@@ -109,7 +113,7 @@ mod tests {
     #[test]
     fn code_block_without_language() -> Result<(), Box<dyn std::error::Error>> {
         let md = "```\nraw\n```\n";
-        let html = render(md, &Highlighter::default())?;
+        let html = render_string(md, &Highlighter::default())?;
         assert!(html.contains("class=\"code-block\""), "got: {html}");
         assert!(!html.contains("language-"), "got: {html}");
         Ok(())
@@ -118,14 +122,14 @@ mod tests {
     #[test]
     fn code_block_malicious_language_is_sanitized() -> Result<(), Box<dyn std::error::Error>> {
         let md = "```\"><script>\ncode\n```\n";
-        let html = render(md, &Highlighter::default())?;
+        let html = render_string(md, &Highlighter::default())?;
         assert!(!html.contains("<script>"), "got: {html}");
         Ok(())
     }
 
     #[test]
     fn raw_html_is_escaped() -> Result<(), Box<dyn std::error::Error>> {
-        let html = render("<script>alert(1)</script>", &Highlighter::default())?;
+        let html = render_string("<script>alert(1)</script>", &Highlighter::default())?;
         assert!(!html.contains("<script>"), "got: {html}");
         assert!(html.contains("&lt;script&gt;"), "got: {html}");
         Ok(())

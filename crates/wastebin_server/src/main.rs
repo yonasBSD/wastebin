@@ -201,6 +201,10 @@ fn make_app(state: AppState, timeout: Duration, max_body_size: usize) -> Router 
         .route("/theme", get(theme::get))
         .route("/new", post(insert::form::post))
         .route("/qr/{id}", get(html::qr::get))
+        .route(
+            "/md/{id}",
+            get(html::rendered::get).post(html::rendered::get),
+        )
         .route("/burn/{id}", get(html::burn::get))
         .route(
             "/{id}",

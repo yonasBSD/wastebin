@@ -273,6 +273,12 @@ impl Highlighter {
 }
 
 impl Html {
+    /// Wrap an already-HTML string. Callers are responsible for ensuring the content is safe to
+    /// insert into a page (i.e. produced by a trusted renderer).
+    pub fn new(html: String) -> Self {
+        Self(html)
+    }
+
     pub fn into_inner(self) -> String {
         self.0
     }

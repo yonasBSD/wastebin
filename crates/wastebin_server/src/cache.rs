@@ -23,7 +23,6 @@ pub(crate) enum Mode {
     /// Syntax-highlighted source view.
     Source,
     /// Markdown rendered to HTML.
-    #[expect(dead_code, reason = "wired up by the Markdown rendering handler")]
     Rendered,
 }
 
