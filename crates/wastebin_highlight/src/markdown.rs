@@ -1,13 +1,19 @@
+use std::sync::OnceLock;
+
+use ammonia::Builder;
 use pulldown_cmark::{
-    BlockQuoteKind, CodeBlockKind, CowStr, Event, Options, Parser, Tag, TagEnd, html,
+    BlockQuoteKind, CodeBlockKind, CowStr, Event, Options, Parser, Tag, html,
 };
 
 use crate::highlight::Error;
 use crate::{Highlighter, Html};
 
 /// Render CommonMark `text` to HTML. Fenced code blocks with a known language are syntax
-/// highlighted via `highlighter`; unknown languages fall back to plain text. Raw HTML is
-/// disabled — any `<script>`-like input is rendered as visible text.
+/// highlighted via `highlighter`; unknown languages fall back to plain text.
+///
+/// Raw HTML embedded in the source is passed through the parser and then sanitized by
+/// [`ammonia`], so tags like `<details>` or `<kbd>` survive while `<script>`, inline event
+/// handlers, `javascript:` URLs and other XSS vectors are stripped.
 pub fn render(text: &str, highlighter: &Highlighter) -> Result<Html, Error> {
     let options = Options::ENABLE_TABLES
         | Options::ENABLE_STRIKETHROUGH
@@ -18,9 +24,10 @@ pub fn render(text: &str, highlighter: &Highlighter) -> Result<Html, Error> {
     let parser = Parser::new_ext(text, options);
     let events = rewrite_events(parser, highlighter)?;
 
-    let mut out = String::with_capacity(text.len());
-    html::push_html(&mut out, events.into_iter());
-    Ok(Html::new(out))
+    let mut raw = String::with_capacity(text.len());
+    html::push_html(&mut raw, events.into_iter());
+
+    Ok(Html::new(sanitizer().clean(&raw).to_string()))
 }
 
 fn rewrite_events<'a>(
@@ -40,7 +47,7 @@ fn rewrite_events<'a>(
                     buf.push_str(&text);
                 }
             }
-            Event::End(TagEnd::CodeBlock) if pending.is_some() => {
+            Event::End(pulldown_cmark::TagEnd::CodeBlock) if pending.is_some() => {
                 if let Some((lang, code)) = pending.take() {
                     let html = highlighter.highlight_code_block(&code, &lang)?;
                     out.push(Event::Html(CowStr::from(html)));
@@ -50,14 +57,25 @@ fn rewrite_events<'a>(
                 out.push(Event::Start(Tag::BlockQuote(Some(kind))));
                 out.push(Event::Html(CowStr::from(alert_title(kind))));
             }
-            Event::Html(raw) | Event::InlineHtml(raw) => {
-                out.push(Event::Text(raw));
-            }
             other => out.push(other),
         }
     }
 
     Ok(out)
+}
+
+/// Shared ammonia sanitizer. Extends the default allowlist with `class` on any tag (needed for
+/// syntax-highlight spans and alert blockquotes) and the handful of attributes pulldown-cmark
+/// emits on task-list checkboxes.
+fn sanitizer() -> &'static Builder<'static> {
+    static CLEANER: OnceLock<Builder<'static>> = OnceLock::new();
+    CLEANER.get_or_init(|| {
+        let mut builder = Builder::default();
+        builder.add_generic_attributes(["class"]);
+        builder.add_tags(["input"]);
+        builder.add_tag_attributes("input", ["type", "checked", "disabled"]);
+        builder
+    })
 }
 
 /// Return the HTML injected at the top of a GFM alert blockquote.
@@ -192,10 +210,23 @@ mod tests {
     }
 
     #[test]
-    fn raw_html_is_escaped() -> Result<(), Box<dyn std::error::Error>> {
-        let html = render_string("<script>alert(1)</script>", &Highlighter::default())?;
-        assert!(!html.contains("<script>"), "got: {html}");
-        assert!(html.contains("&lt;script&gt;"), "got: {html}");
+    fn dangerous_raw_html_is_stripped() -> Result<(), Box<dyn std::error::Error>> {
+        let md = "<script>alert(1)</script>\n\n<a href=\"javascript:alert(1)\" onclick=\"x\">x</a>\n";
+        let html = render_string(md, &Highlighter::default())?;
+        assert!(!html.contains("<script"), "got: {html}");
+        assert!(!html.contains("alert(1)"), "got: {html}");
+        assert!(!html.contains("javascript:"), "got: {html}");
+        assert!(!html.contains("onclick"), "got: {html}");
+        Ok(())
+    }
+
+    #[test]
+    fn safe_raw_html_survives() -> Result<(), Box<dyn std::error::Error>> {
+        let md = "<details><summary>more</summary>hidden</details>\n\nPress <kbd>Ctrl</kbd>.\n";
+        let html = render_string(md, &Highlighter::default())?;
+        assert!(html.contains("<details>"), "got: {html}");
+        assert!(html.contains("<summary>more</summary>"), "got: {html}");
+        assert!(html.contains("<kbd>Ctrl</kbd>"), "got: {html}");
         Ok(())
     }
 }
