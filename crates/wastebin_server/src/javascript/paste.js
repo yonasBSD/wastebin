@@ -104,6 +104,10 @@ function onKey(e) {
   else if (e.key == 'w') {
     document.body.classList.toggle('line-wrap');
   }
+  else if (e.key == 'm') {
+    const toggle = document.getElementById('view-toggle');
+    if (toggle) window.location.href = toggle.href;
+  }
   else if (e.key == '?') {
     var overlay = document.getElementById("overlay");
 

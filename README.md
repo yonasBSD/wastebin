@@ -150,8 +150,9 @@ When viewing a paste, you can use
 * <kbd>y</kbd> to copy the current URL to the clipboard,
 * <kbd>c</kbd> to copy the content to the clipboard,
 * <kbd>q</kbd> to display the current URL as a QR code,
-* <kbd>p</kbd> to view the formatted paste and
-* <kbd>w</kbd> to toggle line wrapping on and off (off by default)
+* <kbd>p</kbd> to view the formatted paste,
+* <kbd>w</kbd> to toggle line wrapping on and off (off by default),
+* <kbd>m</kbd> to toggle the rendered view on Markdown pastes and
 * <kbd>?</kbd> to view the list of keybindings.
 
 To paste some text you can also use the <kbd>ctrl</kbd>+<kbd>s</kbd> key

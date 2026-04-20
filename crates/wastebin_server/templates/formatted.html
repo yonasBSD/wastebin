@@ -2,7 +2,7 @@
 
 {% block view_toggle %}
   {% if is_markdown %}
-    <a href="/md/{{ key }}" class="nav-button" title="rendered view" aria-label="rendered view">
+    <a id="view-toggle" href="/md/{{ key }}" class="nav-button" title="rendered view" aria-label="rendered view">
       <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 3.5h11a1 1 0 011 1v7a1 1 0 01-1 1h-11a1 1 0 01-1-1v-7a1 1 0 011-1z"/><path d="M4 10.5V5.5l2 2 2-2v5"/><path d="M10 5.5v5M10 10.5l1.5-1.5M10 10.5L8.5 9"/></svg>
     </a>
   {% endif %}
@@ -40,6 +40,12 @@
           <td><kbd>w</kbd></td>
           <td>Toggle line wrapping</td>
         </tr>
+        {% if is_markdown %}
+        <tr>
+          <td><kbd>m</kbd></td>
+          <td>Toggle rendered view</td>
+        </tr>
+        {% endif %}
         <tr>
           <td><kbd>?</kbd></td>
           <td>Toggle help</td>
