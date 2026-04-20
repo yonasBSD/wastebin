@@ -46,7 +46,7 @@ pub async fn get(
             theme: theme.clone(),
             key,
             can_delete,
-            is_available: false,
+            is_available: true,
             code,
             title,
             expiration,

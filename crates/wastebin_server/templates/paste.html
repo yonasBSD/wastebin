@@ -33,9 +33,11 @@
     <button class="nav-button" title="copy to clipboard" aria-label="copy to clipboard" id="copy-button">
       <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="7" height="8" rx="1"/><path d="M6 5V4a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1"/></svg>
     </button>
+    {% block qr_button %}
     <a href="/qr/{{ key }}" class="nav-button" title="qr code" aria-label="qr code">
       <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h6v6H4V4Zm10 10h6v6h-6v-6Zm0-10h6v6h-6V4Zm-4 10h.01v.01H10V14Zm0 4h.01v.01H10V18Zm-3 2h.01v.01H7V20Zm0-4h.01v.01H7V16Zm-3 2h.01v.01H4V18Zm0-4h.01v.01H4V14Z"/><path d="M7 7h.01v.01H7V7Zm10 10h.01v.01H17V17Z"/></svg>
     </a>
+    {% endblock %}
     {% block view_toggle %}{% endblock %}
   {% endif %}
 {% endblock %}
