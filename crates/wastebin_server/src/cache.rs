@@ -17,10 +17,38 @@ pub(crate) struct Key {
     pub ext: Option<String>,
 }
 
+/// Which representation of a paste a cached entry holds.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub(crate) enum Mode {
+    /// Syntax-highlighted source view.
+    Source,
+    /// Markdown rendered to HTML.
+    #[expect(dead_code, reason = "wired up by the Markdown rendering handler")]
+    Rendered,
+}
+
+/// Internal cache slot partitioning cached HTML by paste identity and render mode.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+struct Slot {
+    id: Id,
+    ext: Option<String>,
+    mode: Mode,
+}
+
+impl Slot {
+    fn new(key: &Key, mode: Mode) -> Self {
+        Self {
+            id: key.id,
+            ext: key.ext.clone(),
+            mode,
+        }
+    }
+}
+
 /// Stores formatted HTML.
 #[derive(Clone)]
 pub(crate) struct Cache {
-    inner: Arc<Mutex<SizedCache<Key, Html>>>,
+    inner: Arc<Mutex<SizedCache<Slot, Html>>>,
 }
 
 impl Cache {
@@ -30,18 +58,18 @@ impl Cache {
         Self { inner }
     }
 
-    pub fn put(&self, key: Key, value: Html) {
+    pub fn put(&self, key: &Key, mode: Mode, value: Html) {
         self.inner
             .lock()
             .expect("getting lock")
-            .cache_set(key, value);
+            .cache_set(Slot::new(key, mode), value);
     }
 
-    pub fn get(&self, key: &Key) -> Option<Html> {
+    pub fn get(&self, key: &Key, mode: Mode) -> Option<Html> {
         self.inner
             .lock()
             .expect("getting lock")
-            .cache_get(key)
+            .cache_get(&Slot::new(key, mode))
             .cloned()
     }
 }

@@ -4,7 +4,7 @@ use axum::extract::{Form, Path, State};
 use axum::response::{IntoResponse, Response};
 use serde::Deserialize;
 
-use crate::cache::Key;
+use crate::cache::{Key, Mode};
 use crate::handlers::extract::{Theme, Uid};
 use crate::handlers::html::{ErrorResponse, PasswordInput, make_error};
 use crate::{Cache, Database, Highlighter, Page};
@@ -77,7 +77,7 @@ pub async fn get<E>(
             .zip(owner_uid)
             .is_some_and(|(Uid(user_uid), owner_uid)| user_uid == owner_uid);
 
-        let html = if let Some(html) = cache.get(&key) {
+        let html = if let Some(html) = cache.get(&key, Mode::Source) {
             tracing::trace!(?key, "found cached item");
             html.into_inner()
         } else {
@@ -88,7 +88,7 @@ pub async fn get<E>(
 
             if is_available && no_password {
                 tracing::trace!(?key, "cache item");
-                cache.put(key.clone(), html.clone());
+                cache.put(&key, Mode::Source, html.clone());
             }
 
             html.into_inner()
