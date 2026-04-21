@@ -5,6 +5,15 @@
 ### Added
 
 - Sanitized Markdown rendering toggleable with `m` or using a new button.
+- Docker image build script to demonstrate how multi-arch images are produced.
+
+### Changed
+
+- Use Lucide icons for everything.
+
+### Fixed
+
+- QR view not showing the remaining actions.
 
 
 ## 3.5.0
