@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+
+## 3.6.0
+
+**2026-04-21**
+
 ### Added
 
 - Sanitized Markdown rendering toggleable with `m` or using a new button.

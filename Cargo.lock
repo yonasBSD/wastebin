@@ -2767,7 +2767,7 @@ dependencies = [
 
 [[package]]
 name = "wastebin"
-version = "3.5.0"
+version = "3.6.0"
 dependencies = [
  "askama",
  "askama_web",
@@ -2797,7 +2797,7 @@ dependencies = [
 
 [[package]]
 name = "wastebin-ctl"
-version = "3.5.0"
+version = "3.6.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -2809,7 +2809,7 @@ dependencies = [
 
 [[package]]
 name = "wastebin-theme-showcase"
-version = "3.5.0"
+version = "3.6.0"
 dependencies = [
  "askama",
  "syntect",
@@ -2819,7 +2819,7 @@ dependencies = [
 
 [[package]]
 name = "wastebin_core"
-version = "3.5.0"
+version = "3.6.0"
 dependencies = [
  "async-compression",
  "chacha20poly1305",
@@ -2837,7 +2837,7 @@ dependencies = [
 
 [[package]]
 name = "wastebin_highlight"
-version = "3.5.0"
+version = "3.6.0"
 dependencies = [
  "ammonia",
  "pulldown-cmark",
