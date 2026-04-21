@@ -4,8 +4,13 @@ permissions:
   contents: read
 
 on:
-  schedule:
-    - cron: '32 1 * * *'
+  push:
+    branches:
+      - master
+    paths:
+      - '.github/workflows/theme-showcase.yml'
+      - 'crates/wastebin_theme_showcase/**'
+      - 'crates/wastebin_highlight/**'
 
 jobs:
   build:
