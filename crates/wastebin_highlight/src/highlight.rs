@@ -241,8 +241,11 @@ impl Highlighter {
             .find_syntax_by_token(token)
             .unwrap_or_else(|| self.syntax_set.find_syntax_plain_text());
 
-        let mut generator =
-            ClassedHTMLGenerator::new_with_class_style(syntax, &self.syntax_set, ClassStyle::Spaced);
+        let mut generator = ClassedHTMLGenerator::new_with_class_style(
+            syntax,
+            &self.syntax_set,
+            ClassStyle::Spaced,
+        );
 
         for line in LinesWithEndings::from(text) {
             generator.parse_html_for_line_which_includes_newline(line)?;

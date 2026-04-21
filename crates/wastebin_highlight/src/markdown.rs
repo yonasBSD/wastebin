@@ -1,9 +1,7 @@
 use std::sync::OnceLock;
 
 use ammonia::Builder;
-use pulldown_cmark::{
-    BlockQuoteKind, CodeBlockKind, CowStr, Event, Options, Parser, Tag, html,
-};
+use pulldown_cmark::{BlockQuoteKind, CodeBlockKind, CowStr, Event, Options, Parser, Tag, html};
 
 use crate::highlight::Error;
 use crate::{Highlighter, Html};
@@ -133,7 +131,10 @@ mod tests {
     fn code_block_is_highlighted() -> Result<(), Box<dyn std::error::Error>> {
         let md = "```rust\nfn main() {}\n```\n";
         let html = render_string(md, &Highlighter::default())?;
-        assert!(html.contains("class=\"code-block language-rust\""), "got: {html}");
+        assert!(
+            html.contains("class=\"code-block language-rust\""),
+            "got: {html}"
+        );
         assert!(html.contains("<span class=\""), "got: {html}");
         Ok(())
     }
@@ -192,9 +193,7 @@ mod tests {
             let html = render_string(&md, &Highlighter::default())?;
             assert!(html.contains(class), "{marker}: {html}");
             assert!(
-                html.contains(&format!(
-                    "<p class=\"markdown-alert-title\">{label}</p>"
-                )),
+                html.contains(&format!("<p class=\"markdown-alert-title\">{label}</p>")),
                 "{marker}: {html}"
             );
         }
@@ -211,7 +210,8 @@ mod tests {
 
     #[test]
     fn dangerous_raw_html_is_stripped() -> Result<(), Box<dyn std::error::Error>> {
-        let md = "<script>alert(1)</script>\n\n<a href=\"javascript:alert(1)\" onclick=\"x\">x</a>\n";
+        let md =
+            "<script>alert(1)</script>\n\n<a href=\"javascript:alert(1)\" onclick=\"x\">x</a>\n";
         let html = render_string(md, &Highlighter::default())?;
         assert!(!html.contains("<script"), "got: {html}");
         assert!(!html.contains("alert(1)"), "got: {html}");
