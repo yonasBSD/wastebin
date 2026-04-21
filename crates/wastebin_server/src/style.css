@@ -102,7 +102,7 @@ header {
   color: var(--fg);
   background: none;
   border: none;
-  padding: 10px 8px;
+  padding: 10px;
   border-radius: 4px;
   cursor: pointer;
   transition: color 120ms, background 120ms;
@@ -114,9 +114,10 @@ header {
 }
 
 .nav-button svg {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   flex-shrink: 0;
+  stroke-width: 1.5;
 }
 
 .nav-button-danger {
@@ -130,7 +131,7 @@ header {
 
 .nav-title {
   font-family: var(--font-mono);
-  font-size: var(--fs-sm);
+  font-size: 0.975rem;
   color: var(--fg);
   white-space: nowrap;
   overflow: hidden;
@@ -471,6 +472,12 @@ header {
   color: var(--fg);
 }
 
+.password-toggle svg {
+  width: 17px;
+  height: 17px;
+  stroke-width: 1.75;
+}
+
 .password-toggle .eye-hide {
   display: none;
 }
@@ -628,8 +635,8 @@ header {
 }
 
 .theme-opt svg {
-  width: 12px;
-  height: 12px;
+  width: 15px;
+  height: 15px;
   flex-shrink: 0;
 }
 
