@@ -8,12 +8,13 @@ A minimal pastebin with a design shamelessly copied from
 
 <p align="center"><img src="https://raw.githubusercontent.com/matze/wastebin/master/assets/screenshot.webp"></p>
 
-<p align="center"><strong><a href="https://bin.bloerg.net">DEMO</a></strong> (resets every day)</p>
+<p align="center"><strong><a href="https://bin.bloerg.net">DEMO</a></strong> (resets every day) • <strong><a href="https://matze.github.io/wastebin/">THEMES</a></strong></p>
 
 You are reading the documentation for an **unreleased version**. You can refer
 to released versions here:
 
-**[3.5.0](https://github.com/matze/wastebin/tree/d379a6e3e73e6f1fcf23f93c9b0cc857f46acbce)** •
+**[3.6.0](https://github.com/matze/wastebin/tree/2a9f3b6eabe21d6c42c39d6885ed767868b12fa7)** •
+[3.5.0](https://github.com/matze/wastebin/tree/d379a6e3e73e6f1fcf23f93c9b0cc857f46acbce) •
 [3.4.1](https://github.com/matze/wastebin/tree/c9d717329a6e357e8a13a324bfa9a53d41ae9b35) •
 [3.3.0](https://github.com/matze/wastebin/tree/a297749b932ed9ff32569f3af7ee8e4a5b499834) •
 [3.2.0](https://github.com/matze/wastebin/tree/3fdec3abde4f32b92323864ffea51577ce1e625e) •
