@@ -29,6 +29,16 @@ pub(crate) struct PasswordInput {
     pub id: String,
 }
 
+/// Interstitial page shown before a burn-after-reading paste is revealed.
+#[derive(Template, WebTemplate)]
+#[template(path = "burn-confirmation.html")]
+pub(crate) struct BurnConfirmation {
+    pub page: Page,
+    pub theme: Option<Theme>,
+    pub id: String,
+    pub title: Option<String>,
+}
+
 /// Error response carrying a status code and the page itself.
 pub(crate) type ErrorResponse = (StatusCode, Error);
 

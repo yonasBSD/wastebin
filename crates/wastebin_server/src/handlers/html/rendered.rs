@@ -65,6 +65,7 @@ pub async fn get<E>(
             uid: owner_uid,
             title,
             expiration,
+            ..
         } = metadata;
 
         let can_delete = uid

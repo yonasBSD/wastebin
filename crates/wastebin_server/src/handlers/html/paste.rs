@@ -6,7 +6,7 @@ use serde::Deserialize;
 
 use crate::cache::{Key, Mode};
 use crate::handlers::extract::{Theme, Uid};
-use crate::handlers::html::{ErrorResponse, PasswordInput, make_error};
+use crate::handlers::html::{BurnConfirmation, ErrorResponse, PasswordInput, make_error};
 use crate::{Cache, Database, Highlighter, Page};
 use wastebin_core::crypto::Password;
 use wastebin_core::db;
@@ -16,6 +16,14 @@ use wastebin_core::expiration::Expiration;
 #[derive(Deserialize, Debug)]
 pub(crate) struct PasswordForm {
     pub(crate) password: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub(crate) struct PasteForm {
+    #[serde(default)]
+    pub(crate) password: Option<String>,
+    #[serde(default)]
+    pub(crate) confirm_burn: Option<String>,
 }
 
 /// Paste view showing the formatted paste.
@@ -50,14 +58,33 @@ pub async fn get<E>(
     Path(id): Path<String>,
     uid: Option<Uid>,
     theme: Option<Theme>,
-    form: Result<Form<PasswordForm>, E>,
+    form: Result<Form<PasteForm>, E>,
 ) -> Result<Response, ErrorResponse> {
     async {
+        let form = form.ok().map(|Form(form)| form);
         let password = form
-            .ok()
-            .map(|form| Password::from(form.password.as_bytes().to_vec()));
+            .as_ref()
+            .and_then(|form| form.password.as_ref())
+            .filter(|password| !password.is_empty())
+            .map(|password| Password::from(password.as_bytes().to_vec()));
+        let confirmed = form.as_ref().and_then(|form| form.confirm_burn.as_deref()) == Some("1");
         let no_password = password.is_none();
         let key: Key = id.parse()?;
+
+        let metadata = match db.get_metadata(key.id).await {
+            Ok(metadata) => metadata,
+            Err(err) => return Err(err.into()),
+        };
+
+        if metadata.must_be_deleted && !confirmed {
+            return Ok(BurnConfirmation {
+                page: page.clone(),
+                theme: theme.clone(),
+                id,
+                title: metadata.title.clone(),
+            }
+            .into_response());
+        }
 
         let (data, is_available) = match db.get(key.id, password).await {
             Ok(Entry::Regular(data)) => (data, true),
@@ -78,6 +105,7 @@ pub async fn get<E>(
             uid: owner_uid,
             title,
             expiration,
+            ..
         } = metadata;
 
         let can_delete = uid

@@ -8,6 +8,7 @@
   <div class="flex-center">
     <div class="centered-label">encrypted paste</div>
     <form action="/{{ id }}" method="post">
+      <input type="hidden" name="confirm_burn" value="1">
       <div class="controls">
         <div class="password-input-wrap">
           <input type="password" id="password" name="password" placeholder="password …" autofocus>

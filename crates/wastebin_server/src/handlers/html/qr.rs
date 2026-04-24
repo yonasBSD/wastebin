@@ -35,6 +35,7 @@ pub async fn get(
             uid: owner_uid,
             title,
             expiration,
+            ..
         } = db.get_metadata(key.id).await?;
 
         let can_delete = uid

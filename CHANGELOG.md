@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- Confirmation page before revealing a burn-after-reading paste.
+
 
 ## 3.6.0
 
