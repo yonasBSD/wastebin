@@ -1,20 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="flex-center">
-  <div class="centered-label">burn after reading</div>
-  <div class="centered-body">
-    This paste will be <strong>permanently deleted</strong> the moment it is revealed.<br>
-    You will not be able to view it again. Make sure nobody is looking over your shoulder.
-  </div>
-  {% if let Some(title) = title %}
-  <div class="centered-body"><em>{{ title }}</em></div>
-  {% endif %}
-  <form action="/{{ id }}" method="post">
-    <div class="controls">
-      <input type="hidden" name="confirm_burn" value="1">
-      <button class="button">reveal and burn</button>
-      <a class="text-link" href="/">cancel</a>
+  <div class="dialog">
+    <div class="dialog-header">Burn after reading</div>
+    <div class="dialog-section">
+      This paste will be <strong>permanently deleted</strong> the moment it is revealed.
+      You will not be able to view it again.
     </div>
-  </form>
+    {% if let Some(title) = title %}
+    <div class="dialog-section dialog-subtitle">{{ title }}</div>
+    {% endif %}
+    <form class="dialog-section dialog-actions" action="/{{ id }}" method="post">
+      <input type="hidden" name="confirm_burn" value="1">
+      <a class="button button-secondary" href="/">cancel</a>
+      <button class="button" type="submit">reveal</button>
+    </form>
+  </div>
 </div>
 {% endblock %}

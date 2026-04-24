@@ -83,8 +83,8 @@ mod tests {
 
         assert_eq!(res.status(), StatusCode::OK);
         let body = res.text().await?;
-        assert!(body.contains("burn after reading"));
-        assert!(body.contains("reveal and burn"));
+        assert!(body.contains("confirm_burn"));
+        assert!(body.contains(">reveal<"));
         assert!(!body.contains("secret-body-xyz"));
 
         // Second GET must still show the confirmation — the paste is not yet burned.
@@ -95,7 +95,7 @@ mod tests {
             .await?;
 
         assert_eq!(res.status(), StatusCode::OK);
-        assert!(res.text().await?.contains("reveal and burn"));
+        assert!(res.text().await?.contains(">reveal<"));
 
         // Confirming reveals the paste and burns it.
         let res = client
@@ -147,7 +147,7 @@ mod tests {
             .await?;
 
         assert_eq!(res.status(), StatusCode::OK);
-        assert!(res.text().await?.contains("reveal and burn"));
+        assert!(res.text().await?.contains(">reveal<"));
 
         // Confirming an encrypted burn paste yields the password form, not the content.
         let res = client
@@ -211,7 +211,7 @@ mod tests {
                 .send()
                 .await?;
             assert_eq!(res.status(), StatusCode::OK);
-            assert!(res.text().await?.contains("reveal and burn"));
+            assert!(res.text().await?.contains(">reveal<"));
         }
 
         Ok(())

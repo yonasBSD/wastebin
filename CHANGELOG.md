@@ -6,6 +6,11 @@
 
 - Confirmation page before revealing a burn-after-reading paste.
 
+### Changed
+
+- Design of interstitial pages like burn-after-reading confirmation, password
+  entry and error page.
+
 
 ## 3.6.0
 

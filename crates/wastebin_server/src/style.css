@@ -724,15 +724,86 @@ tr.line-highlight td.line {
   color: var(--fg-muted);
 }
 
+.dialog {
+  width: min(420px, calc(100vw - 32px));
+  background: var(--panel-bg);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 18px;
+  gap: 16px;
+  font-size: var(--fs-md);
+  color: var(--fg);
+}
+
+.dialog-header {
+  font-weight: 600;
+}
+
+.dialog-section {
+  line-height: 1.55;
+}
+
+.dialog-subtitle {
+  color: var(--fg-muted);
+  text-align: center;
+  font-style: italic;
+}
+
+.dialog-qr {
+  display: flex;
+  justify-content: center;
+}
+
+.dialog-qr svg {
+  width: 14rem;
+}
+
+.dialog > form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+}
+
+.flex-center .dialog-actions {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.flex-center .dialog-actions .button {
+  width: auto;
+  flex: 0 0 auto;
+  padding: 8px 16px;
+  font-size: var(--fs-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.flex-center .dialog-actions .button-secondary {
+  background: transparent;
+  color: var(--fg);
+  border-color: var(--border);
+}
+
+.flex-center .dialog-actions .button-secondary:hover {
+  opacity: 1;
+  background: var(--panel-bg2);
+}
+
 .centered-body {
   font-family: var(--font-mono);
   font-size: var(--fs-md);
   text-align: center;
   line-height: 1.6;
-}
-
-.error-emoji {
-  font-size: var(--fs-xl);
 }
 
 .flex-center .button {
