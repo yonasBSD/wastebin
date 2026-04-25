@@ -203,7 +203,8 @@ impl Highlighter {
 
         let is_markdown = syntax_ref.name == "Markdown";
         let mut parse_state = ParseState::new(syntax_ref);
-        let mut html = String::from(r#"<table class="src"><tbody>"#);
+        let mut html = String::from(r#"<div id="line-numbers" aria-hidden="true">"#);
+        let mut code = String::from(r#"<div class="src-code"><code>"#);
         let mut scope_stack = ScopeStack::new();
 
         for (mut line_number, line) in LinesWithEndings::from(&text).enumerate() {
@@ -227,36 +228,39 @@ impl Highlighter {
             line_number += 1;
             let _ = write!(
                 html,
-                r#"<tr><td id="L{line_number}"><a href=#L{line_number}>{line_number}</a></td><td>"#
+                r##"<div id="L{line_number}"><a href="#L{line_number}">{line_number}</a></div>"##
             );
+
+            let _ = write!(code, r#"<div id="LC{line_number}">"#);
 
             // The line may close spans opened on earlier lines before opening any of its own.
             // Track the minimum running span balance so we can prepend bare `<span>`s to keep
             // the line's HTML self-contained — using only `delta` would let `</span>` precede
             // its match within the line, producing misnested output.
             let prepend = open_span_prefix(&formatted);
-            html.push_str(&"<span>".repeat(prepend));
+            code.push_str(&"<span>".repeat(prepend));
 
-            // Strip stray newlines that cause vertically stretched lines.
-            html.reserve(formatted.len());
+            code.reserve(formatted.len());
 
             for segment in formatted.split('\n') {
-                html.push_str(segment);
+                code.push_str(segment);
             }
 
             let extra_close =
                 isize::try_from(prepend).expect("prepend count fits into isize") + delta;
 
             if extra_close > 0 {
-                html.push_str(
+                code.push_str(
                     &"</span>".repeat(extra_close.try_into().expect("isize fits into usize")),
                 );
             }
 
-            html.push_str("</td></tr>");
+            code.push_str("</div>");
         }
 
-        html.push_str("</tbody></table>");
+        html.push_str("</div>");
+        code.push_str("</code></div>");
+        html.push_str(&code);
 
         Ok(Html(html))
     }
@@ -370,7 +374,7 @@ mod tests {
             .highlight(text.into(), Some("md".into()))?
             .into_inner();
 
-        for row in html.split("</tr>").filter(|s| s.contains("<td")) {
+        for row in html.split("</div>").filter(|s| s.contains("id=\"LC")) {
             assert!(
                 min_span_balance(row) >= 0,
                 "row has unmatched </span>: {row}"

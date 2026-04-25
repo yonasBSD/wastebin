@@ -188,10 +188,8 @@ header {
   overflow: hidden;
 }
 
-.editor {
+.editor, .source-view {
   display: flex;
-  flex: 1;
-  min-height: 0;
   font-family: var(--font-mono);
   font-size: var(--fs-md);
   line-height: 1.54;
@@ -199,10 +197,19 @@ header {
   color: var(--main-fg-color, var(--fg));
 }
 
+.editor {
+  flex: 1;
+  min-height: 0;
+}
+
+.source-view {
+  min-height: 100%;
+}
+
 #line-numbers {
   display: block;
   flex: 0 0 auto;
-  padding: 14px 12px 14px 16px;
+  padding: 14px 0;
   text-align: right;
   background: var(--gutter-bg);
   color: var(--gutter-fg);
@@ -216,6 +223,7 @@ header {
 #line-numbers div {
   height: 1.54em;
   line-height: 1.54em;
+  padding: 0 12px 0 16px;
 }
 
 .editor textarea {
@@ -647,50 +655,63 @@ table {
   min-width: max-content;
 }
 
-.src td:first-child {
-  user-select: none;
-  padding: 0 12px 0 18px;
-  text-align: right;
-  color: var(--gutter-fg);
-  background: var(--gutter-bg);
-  border-right: 1px solid var(--border-soft);
-  font-variant-numeric: tabular-nums;
-  font-family: var(--font-mono);
-  font-size: var(--fs-md);
-  line-height: 1.69;
-  width: 1px;
-  white-space: nowrap;
+/* source view (paste) — matches editor layout */
+
+.source-view > #line-numbers {
+  flex: 0 0 auto;
 }
 
-.src td:first-child > a, .src td:first-child > a:visited {
-  color: var(--gutter-fg);
+.source-view > .src-code {
+  flex: 1;
+  margin: 0;
+  padding: 14px 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  white-space: pre;
+  tab-size: 2;
 }
 
-.src td:first-child > a:hover, .src td:first-child > a:focus {
+.source-view > .src-code code {
+  display: block;
+}
+
+.source-view .src-code [id^="LC"] {
+  padding: 0 16px;
+}
+
+/* line number links in paste view */
+
+.source-view #line-numbers a,
+.source-view #line-numbers a:visited {
+  color: var(--gutter-fg);
+  text-decoration: none;
+}
+
+.source-view #line-numbers a:hover,
+.source-view #line-numbers a:focus {
   color: var(--accent);
 }
 
-.src td + td {
-  padding: 0 18px 0 14px;
-  white-space: pre;
-  font-family: var(--font-mono);
-  font-size: var(--fs-md);
-  line-height: 1.69;
-  user-select: text;
-}
+/* line highlighting */
 
-.line-wrap .src td + td {
-  white-space: pre-wrap;
-  word-wrap: break-word;
-}
-
-.src tr.line-highlight > td:first-child {
+.source-view #line-numbers .line-highlight {
   background: var(--accent-bg-gutter);
   font-weight: bold;
 }
 
-.src tr.line-highlight > td + td {
+.source-view .src-code .line-highlight {
   background: var(--accent-bg);
+}
+
+/* line wrapping */
+
+.line-wrap .source-view > .src-code {
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 .markup.underline.link > a, .markup.underline.link > a:visited {

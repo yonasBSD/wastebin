@@ -6,6 +6,7 @@
 
 - Broken Markdown navigation on QR views.
 - Illegal double `<span>`s.
+- Match paste view padding and line spacing to the main view's.
 
 ### Added
 

@@ -6,8 +6,8 @@ document.addEventListener('keydown', onKey);
 $("copy-button").addEventListener("click", copy);
 
 function highlightLines(scroll) {
-  document.querySelectorAll('tr.line-highlight').forEach(tr => {
-    tr.classList.remove('line-highlight');
+  document.querySelectorAll('.line-highlight').forEach(el => {
+    el.classList.remove('line-highlight');
   });
 
   const match = window.location.hash.match(/^#L(\d+)(?:-L(\d+))?$/);
@@ -19,22 +19,22 @@ function highlightLines(scroll) {
   const to = Math.max(a, b);
 
   for (let i = from; i <= to; i++) {
-    const td = document.getElementById('L' + i);
-    if (td && td.parentElement) {
-      td.parentElement.classList.add('line-highlight');
-    }
+    const lnDiv = document.getElementById('L' + i);
+    if (lnDiv) lnDiv.classList.add('line-highlight');
+    const lcDiv = document.getElementById('LC' + i);
+    if (lcDiv) lcDiv.classList.add('line-highlight');
   }
 
   if (scroll && match[2]) {
-    const firstTd = document.getElementById('L' + from);
-    if (firstTd) firstTd.scrollIntoView({ block: 'center' });
+    const firstLn = document.getElementById('L' + from);
+    if (firstLn) firstLn.scrollIntoView({ block: 'center' });
   }
 }
 
 window.addEventListener('hashchange', () => highlightLines(true));
 highlightLines(true);
 
-document.querySelectorAll('.src td:first-child > a').forEach(a => {
+document.querySelectorAll('#line-numbers a').forEach(a => {
   a.addEventListener('click', (e) => {
     if (!e.shiftKey) return;
     const m = a.getAttribute('href').match(/^#L(\d+)$/);
@@ -64,11 +64,9 @@ function showToast(text, timeout) {
 }
 
 function copy() {
-  const lines = document.querySelectorAll('.src td + td');
-  const content = Array.from(lines)
-    .map(line => line.textContent)
-    .join('')
-    .trim();
+  const code = document.querySelector('.src-code code');
+  if (!code) return;
+  const content = code.textContent.trim();
 
   navigator.clipboard.writeText(content)
     .then(() => {
