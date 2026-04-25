@@ -34,7 +34,7 @@ function highlightLines(scroll) {
 window.addEventListener('hashchange', () => highlightLines(true));
 highlightLines(true);
 
-document.querySelectorAll('td.line-number > a').forEach(a => {
+document.querySelectorAll('.src td:first-child > a').forEach(a => {
   a.addEventListener('click', (e) => {
     if (!e.shiftKey) return;
     const m = a.getAttribute('href').match(/^#L(\d+)$/);
@@ -64,7 +64,7 @@ function showToast(text, timeout) {
 }
 
 function copy() {
-  const lines = document.querySelectorAll('td.line');
+  const lines = document.querySelectorAll('.src td + td');
   const content = Array.from(lines)
     .map(line => line.textContent)
     .join('')

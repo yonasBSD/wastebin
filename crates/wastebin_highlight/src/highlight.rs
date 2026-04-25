@@ -180,7 +180,7 @@ impl Highlighter {
 
         let is_markdown = syntax_ref.name == "Markdown";
         let mut parse_state = ParseState::new(syntax_ref);
-        let mut html = String::from("<table><tbody>");
+        let mut html = String::from(r#"<table class="src"><tbody>"#);
         let mut scope_stack = ScopeStack::new();
 
         for (mut line_number, line) in LinesWithEndings::from(&text).enumerate() {
@@ -203,10 +203,9 @@ impl Highlighter {
 
             line_number += 1;
             let line_number = format!(
-                r#"<tr><td class="line-number" id="L{line_number}"><a href=#L{line_number}>{line_number:>4}</a></td>"#
+                r#"<tr><td id="L{line_number}"><a href=#L{line_number}>{line_number}</a></td><td>"#
             );
             html.push_str(&line_number);
-            html.push_str(r#"<td class="line">"#);
 
             if delta < 0 {
                 html.push_str(

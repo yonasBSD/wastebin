@@ -15,6 +15,7 @@
 - Design of interstitial pages like burn-after-reading confirmation, password
   entry and error page.
 - Bold selected line numbers.
+- Reduced size of generated HTML.
 
 
 ## 3.6.0
