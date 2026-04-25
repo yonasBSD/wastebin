@@ -6,6 +6,7 @@ use url::Url;
 
 use crate::cache::Key;
 use crate::handlers::extract::{Theme, Uid};
+use crate::handlers::html::paste::is_markdown_ext;
 use crate::handlers::html::{ErrorResponse, make_error};
 use crate::{Error, Page};
 use wastebin_core::db::Database;
@@ -42,6 +43,8 @@ pub async fn get(
             .zip(owner_uid)
             .is_some_and(|(Uid(user_uid), owner_uid)| user_uid == owner_uid);
 
+        let is_markdown = is_markdown_ext(key.ext.as_deref());
+
         Ok(Qr {
             page: page.clone(),
             theme: theme.clone(),
@@ -51,6 +54,7 @@ pub async fn get(
             code,
             title,
             expiration,
+            is_markdown,
         })
     }
     .await
@@ -66,6 +70,7 @@ pub(crate) struct Qr {
     key: Key,
     can_delete: bool,
     is_available: bool,
+    is_markdown: bool,
     code: qrcodegen::QrCode,
     title: Option<String>,
     expiration: Option<Expiration>,

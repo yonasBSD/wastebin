@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- Broken Markdown navigation on QR views.
+
 ### Added
 
 - Confirmation page before revealing a burn-after-reading paste.
