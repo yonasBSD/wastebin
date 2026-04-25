@@ -10,6 +10,7 @@
 
 - Design of interstitial pages like burn-after-reading confirmation, password
   entry and error page.
+- Bold selected line numbers.
 
 
 ## 3.6.0

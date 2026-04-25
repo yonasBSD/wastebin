@@ -683,7 +683,11 @@ td.line {
   word-wrap: break-word;
 }
 
-tr.line-highlight td.line-number,
+tr.line-highlight td.line-number {
+  background: var(--accent-bg);
+  font-weight: bold;
+}
+
 tr.line-highlight td.line {
   background: var(--accent-bg);
 }
