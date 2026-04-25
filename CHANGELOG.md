@@ -5,6 +5,7 @@
 ### Fixed
 
 - Broken Markdown navigation on QR views.
+- Illegal double `<span>`s.
 
 ### Added
 

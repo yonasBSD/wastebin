@@ -102,6 +102,26 @@ fn is_markdown_link(scope: Scope) -> bool {
     })
 }
 
+/// Number of unmatched `</span>` closes encountered before the running balance recovers.
+fn open_span_prefix(formatted: &str) -> usize {
+    formatted
+        .split('<')
+        .skip(1)
+        .scan(0_isize, |balance, chunk| {
+            if chunk.starts_with("/span>") {
+                *balance -= 1;
+            } else if chunk.starts_with("span>") || chunk.starts_with("span ") {
+                *balance += 1;
+            }
+            Some(*balance)
+        })
+        .min()
+        .map(std::ops::Neg::neg)
+        .unwrap_or(0)
+        .try_into()
+        .unwrap_or(0)
+}
+
 /// Modified version of [`syntect::html::line_tokens_to_classed_spans`] that outputs HTML anchors
 /// for Markdown links.
 fn line_tokens_to_classed_spans_md(
@@ -146,6 +166,10 @@ fn line_tokens_to_classed_spans_md(
                 }
             }
             BasicScopeStackOp::Pop => {
+                if handling_link {
+                    s.push_str("</a>");
+                    handling_link = false;
+                }
                 if span_empty {
                     s.truncate(span_start);
                 } else {
@@ -153,11 +177,6 @@ fn line_tokens_to_classed_spans_md(
                 }
                 span_delta -= 1;
                 span_empty = false;
-
-                if handling_link {
-                    s.push_str("</a>");
-                    handling_link = false;
-                }
             }
         })?;
     }
@@ -207,20 +226,27 @@ impl Highlighter {
             );
             html.push_str(&line_number);
 
-            if delta < 0 {
-                html.push_str(
-                    &"<span>".repeat(delta.abs().try_into().expect("isize fits into usize")),
-                );
-            }
+            // The line may close spans opened on earlier lines before opening any of its own.
+            // Track the minimum running span balance so we can prepend bare `<span>`s to keep
+            // the line's HTML self-contained — using only `delta` would let `</span>` precede
+            // its match within the line, producing misnested output.
+            let prepend = open_span_prefix(&formatted);
+            html.push_str(&"<span>".repeat(prepend));
 
             // Strip stray newlines that cause vertically stretched lines.
             html.reserve(formatted.len());
+
             for c in formatted.chars().filter(|c| *c != '\n') {
                 html.push(c);
             }
 
-            if delta > 0 {
-                html.push_str(&"</span>".repeat(delta.try_into().expect("isize fits into usize")));
+            let extra_close =
+                isize::try_from(prepend).expect("prepend count fits into isize") + delta;
+
+            if extra_close > 0 {
+                html.push_str(
+                    &"</span>".repeat(extra_close.try_into().expect("isize fits into usize")),
+                );
             }
 
             html.push_str("</td></tr>");
@@ -299,8 +325,67 @@ mod tests {
             Some("md".into()),
         )?;
 
-        assert!(html.into_inner().contains("<span class=\"markup underline link markdown\"><a href=\"https://github.com/matze/wastebin\">https://github.com/matze/wastebin</span></a>"));
+        assert!(html.into_inner().contains("<span class=\"markup underline link markdown\"><a href=\"https://github.com/matze/wastebin\">https://github.com/matze/wastebin</a></span>"));
 
+        Ok(())
+    }
+
+    /// Per-row HTML must be self-balanced: every `</span>` should have a matching `<span>`
+    /// earlier on the same row. Returns the minimum running balance encountered.
+    fn min_span_balance(row: &str) -> isize {
+        let bytes = row.as_bytes();
+        let mut i = 0;
+        let mut balance: isize = 0;
+        let mut min_balance: isize = 0;
+        while i < bytes.len() {
+            let rest = &row[i..];
+            if rest.starts_with("</span>") {
+                balance -= 1;
+                if balance < min_balance {
+                    min_balance = balance;
+                }
+                i += "</span>".len();
+            } else if rest.starts_with("<span") && matches!(bytes.get(i + 5), Some(b' ' | b'>')) {
+                balance += 1;
+                i += rest.find('>').map_or(1, |c| c + 1);
+            } else {
+                i += 1;
+            }
+        }
+        assert_eq!(balance, 0, "row not balanced: {row}");
+        min_balance
+    }
+
+    #[test]
+    fn rows_are_self_balanced_for_markdown_lists() -> Result<(), Box<dyn std::error::Error>> {
+        let highlighter = Highlighter::default();
+        let text = "## Features\n\n\
+            * [axum](https://github.com/tokio-rs/axum) and [sqlite3](https://www.sqlite.org) backend\n\
+            * comes as a single binary with low memory footprint\n";
+        let html = highlighter
+            .highlight(text.into(), Some("md".into()))?
+            .into_inner();
+
+        for row in html.split("</tr>").filter(|s| s.contains("<td")) {
+            assert!(
+                min_span_balance(row) >= 0,
+                "row has unmatched </span>: {row}"
+            );
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn markdown_link_is_well_nested() -> Result<(), Box<dyn std::error::Error>> {
+        let highlighter = Highlighter::default();
+        let html = highlighter
+            .highlight("[hi](https://example.com)".into(), Some("md".into()))?
+            .into_inner();
+
+        assert!(
+            !html.contains("</span></a>"),
+            "anchor must close before its enclosing span: {html}"
+        );
         Ok(())
     }
 }
