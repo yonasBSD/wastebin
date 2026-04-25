@@ -104,6 +104,10 @@ fn is_markdown_link(scope: Scope) -> bool {
 
 /// Number of unmatched `</span>` closes encountered before the running balance recovers.
 fn open_span_prefix(formatted: &str) -> usize {
+    if !formatted.contains("<span") && !formatted.contains("</span>") {
+        return 0;
+    }
+
     formatted
         .split('<')
         .skip(1)
@@ -221,10 +225,10 @@ impl Highlighter {
             };
 
             line_number += 1;
-            let line_number = format!(
+            let _ = write!(
+                html,
                 r#"<tr><td id="L{line_number}"><a href=#L{line_number}>{line_number}</a></td><td>"#
             );
-            html.push_str(&line_number);
 
             // The line may close spans opened on earlier lines before opening any of its own.
             // Track the minimum running span balance so we can prepend bare `<span>`s to keep
@@ -236,8 +240,8 @@ impl Highlighter {
             // Strip stray newlines that cause vertically stretched lines.
             html.reserve(formatted.len());
 
-            for c in formatted.chars().filter(|c| *c != '\n') {
-                html.push(c);
+            for segment in formatted.split('\n') {
+                html.push_str(segment);
             }
 
             let extra_close =
