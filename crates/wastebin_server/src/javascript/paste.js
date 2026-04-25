@@ -109,21 +109,57 @@ function onKey(e) {
     if (toggle) window.location.href = toggle.href;
   }
   else if (e.key == '?') {
-    var overlay = document.getElementById("overlay");
-
-    overlay.style.display = overlay.style.display != "block" ? "block" : "none";
-    overlay.onclick = function() {
-      if (overlay.style.display == "block") {
-        overlay.style.display = "none";
-      }
-    };
+    toggleOverlay();
   }
 
   if (e.keyCode == 27) {
-    var overlay = document.getElementById("overlay");
-
-    if (overlay.style.display == "block") {
+    const overlay = document.getElementById("overlay");
+    if (overlay && overlay.style.display == "block") {
       overlay.style.display = "none";
     }
   }
+}
+
+function buildOverlay() {
+  const rows = [
+    ['n', 'Go home'],
+    ['p', 'Go here'],
+    ['y', 'Copy URL'],
+    ['c', 'Copy content'],
+    ['d', 'Download'],
+    ['q', 'Show QR code'],
+    ['w', 'Toggle line wrapping'],
+  ];
+  if (document.getElementById('view-toggle')) {
+    rows.push(['m', 'Toggle rendered view']);
+  }
+  rows.push(['?', 'Toggle help']);
+
+  const overlay = document.createElement('div');
+  overlay.id = 'overlay';
+  const content = document.createElement('div');
+  content.id = 'overlay-content';
+  const table = document.createElement('table');
+  for (const [key, label] of rows) {
+    const tr = document.createElement('tr');
+    const tdKey = document.createElement('td');
+    const kbd = document.createElement('kbd');
+    kbd.textContent = key;
+    tdKey.appendChild(kbd);
+    const tdLabel = document.createElement('td');
+    tdLabel.textContent = label;
+    tr.appendChild(tdKey);
+    tr.appendChild(tdLabel);
+    table.appendChild(tr);
+  }
+  content.appendChild(table);
+  overlay.appendChild(content);
+  overlay.addEventListener('click', () => { overlay.style.display = 'none'; });
+  document.body.appendChild(overlay);
+  return overlay;
+}
+
+function toggleOverlay() {
+  const overlay = document.getElementById('overlay') || buildOverlay();
+  overlay.style.display = overlay.style.display != 'block' ? 'block' : 'none';
 }
