@@ -11,10 +11,10 @@ Chromium with lines 5-8 anchored (`#L5-L8`) to showcase line highlighting,
 then composites them along a top-left → bottom-right diagonal (dark
 upper-right triangle, light lower-left triangle).
 
-Run `uv run assets/generate-screenshot.py` from the repo root. On first use,
-Playwright's Chromium must be installed with `uv run --with playwright
-playwright install chromium`. The script expects the server binary at
-`target/release/wastebin`; run `cargo build --release -p wastebin` first.
+Run `uv run assets/generate-screenshot.py` from the repo root. Playwright's
+Chromium is installed automatically on first use. The script expects the
+server binary at `target/release/wastebin`; run `cargo build --release -p
+wastebin` first.
 """
 
 import asyncio
@@ -103,6 +103,13 @@ def post_paste(base_url: str, source: Path) -> str:
     return head + "/" + urllib.parse.quote(tail, safe=".")
 
 
+def ensure_chromium() -> None:
+    subprocess.run(
+        [sys.executable, "-m", "playwright", "install", "chromium"],
+        check=True,
+    )
+
+
 async def capture(paste_url: str, pref: str, out_path: Path) -> None:
     async with async_playwright() as p:
         browser = await p.chromium.launch()
@@ -157,6 +164,8 @@ async def run() -> None:
             f"error: {BINARY.relative_to(REPO)} not found; "
             "run `cargo build --release -p wastebin` first"
         )
+
+    ensure_chromium()
 
     port = pick_free_port()
     base_url = f"http://127.0.0.1:{port}"
