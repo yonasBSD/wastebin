@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+
+## 3.6.2
+
+**2026-05-01**
+
 ### Fixed
 
 - Broken shortcut behaviour when <kbd>ctrl</kbd>/<kbd>meta</kbd> is pressed.
