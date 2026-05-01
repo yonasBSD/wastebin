@@ -9,6 +9,11 @@
 - Use the paste key to correctly set the window target, i.e. going to raw view
   from Markdown view works.
 
+### Changed
+
+- Re-try ten times to generate a new paste identifier in order to avoid
+  collisions.
+
 
 ## 3.6.1
 
