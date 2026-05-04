@@ -21,7 +21,9 @@ docker manifest annotate quxfoo/wastebin:${VERSION} \
     --os linux \
     --arch arm64
 
-docker manifest create --amend quxfoo/wastebin:latest \
+docker manifest rm quxfoo/wastebin:latest 2>/dev/null || true
+
+docker manifest create quxfoo/wastebin:latest \
     quxfoo/wastebin:${VERSION}-amd64 \
     quxfoo/wastebin:${VERSION}-arm64
 
